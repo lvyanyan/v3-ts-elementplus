@@ -1,0 +1,62 @@
+#app {
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: left;
+    color: #2c3e50;
+}
+
+.rz-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.rz-form .el-form-item {
+    color: #1F2124;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.el-dialog--center .el-dialog__header {
+    background: #F2F5FA;
+    margin: 0;
+}
+
+.rz-delete {
+    background-image: url(./assets/delete_icon.png);
+}
+
+.rz-destroy {
+    background-image: url(./assets/zhuxiao_icon.png);
+}
+
+.rz-reset {
+    background-image: url(./assets/mima_icon.png);
+}
+
+.rz-setting {
+    background-image: url(./assets/gerenpeizhi_icon.png);
+}
+
+.rz-permission {
+    background-image: url(./assets/auth.png);
+}
+
+.rz-member {
+    background-image: url(./assets/admin.png);
+}
+
+.rz-delete {
+    background-image: url(./assets/delete_icon.png);
+}
+
+.rz-edit {
+    background-image: url(./assets/edit.png);
+}
+
+.rz-public {
+    background-image: url(./assets/public.png);
+}
