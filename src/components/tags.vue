@@ -22,7 +22,7 @@
         </span>
         <template #dropdown>
         <el-dropdown-menu>
-            <el-dropdown-item><span>关闭全部</span></el-dropdown-item>
+            <el-dropdown-item><span @click="closeAll">关闭全部</span></el-dropdown-item>
         </el-dropdown-menu>
         </template>
     </el-dropdown>
@@ -45,6 +45,12 @@ const tabClick=(pane: TabsPaneContext, ev: Event)=>{
 watch(activeName,(n,o)=>{
     localStorage.setItem('active',n)
 })
+const closeAll = ()=>{
+    $store.dispatch('setTagName','/')
+    $store.dispatch('setTags',[{title:'主页',routerUrl:'/'}])
+    localStorage.setItem('tags',JSON.stringify([{title:'主页',routerUrl:'/'}]))
+    route.push('/')
+}
 const removeTab = (targetName: string) => {
   const tabs = editableTabs.value
   let active = activeName.value
