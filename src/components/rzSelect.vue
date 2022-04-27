@@ -1,6 +1,6 @@
 <!--  -->
 <template>
-<el-select v-model="props.value" :placeholder="props.placeholder">
+<el-select v-model="props.value" :placeholder="props.placeholder" clearable >
     <el-option v-for="item in list" :label="item.dicValue" :value="item.dicKey"></el-option>
 </el-select>
 </template>

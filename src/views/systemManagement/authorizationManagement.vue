@@ -84,7 +84,7 @@ const btnConfig=[
 ];
 const deleteItems = ()=>{
     const arr = authorTable.value.selection;
-    if(!arr){
+    if(arr.length<1){
         return;
     }
     let str = []
@@ -154,6 +154,7 @@ const assignPermission = (row)=>{
     http({
         url:'/role/list/visibleMenu',
         method:'post',
+        data:{roleId:row.roleId}
     }).then(res=>{
         if(res.code==200){
             permissionVisible.value = true;
@@ -171,13 +172,17 @@ const permissionOut = ()=>{
 const permissionSubmit = ()=>{
     let arr = menuTree.value!.getCheckedNodes(false,false)
     let str= []
+    let menuPaths = []
     arr.forEach(item=>{
         str.push(item.id)
+        menuPaths.push(item.menuPath)
     })
     str = str.join(',')
+    menuPaths = menuPaths.join(',')
     let obj = {
         roleId:permissionForm.roleId,
-        menuIds: str
+        menuIds: str,
+        menuPaths
     }
     http({
         url:'/role/assign/menu',
@@ -238,12 +243,43 @@ const addUserVisible = ref(false)
 const addUser = ()=>{
     addUserVisible.value = true;
 }
+const addUserSubmit = ()=>{
+    let arr = noneTable.value.selection;
+    let str = []
+    arr.forEach(item=>{
+        str.push(item.userNo)
+    })
+    str = str.join(',')
+    let obj = {
+        roleId:memberForm.roleId,
+        userNos:str
+    }
+    http({
+        url:'/role/add/user',
+        method:'post',
+        data:obj
+    }).then(res=>{
+        if(res.code=="200"){
+            ElMessage({
+                type:'success',
+                message:'添加成功'
+            })
+            addUserOut()
+        }else{
+            ElMessage({
+                type:'error',
+                message:res.msg
+            })
+        }
+    })
+}
 const addUserOut = ()=>{
     addUserVisible.value = false;
+    userTable.value.onload();
 }
 const deleteUser = ()=>{
     const arr = userTable.value.selection;
-    if(!arr){
+    if(arr.length<1){
         return;
     }
     let str = []

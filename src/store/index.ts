@@ -1,10 +1,11 @@
+import { isContext } from 'vm'
 import { createStore } from 'vuex'
 
 export default createStore({
     state: {
         tags: Array,//标签
         tagName: String,//当前标签
-        nodes: Array,//导航
+        navicate: Array,//导航
         roles: [],//角色列表
         userInfo: JSON.stringify({
             userNo: '123456',
@@ -16,14 +17,14 @@ export default createStore({
         saveTags(state, val) {
             state.tags = val
         },
-        saveNodes(state, val) {
-            state.nodes = val
-        },
         saveTagName(state, val) {
             state.tagName = val
         },
         saveInfo(state, val) {
             state.userInfo = val
+        },
+        saveNavicate(state, val) {
+            state.navicate = val
         },
         saveRoles(state, val) {
             state.roles = val
@@ -38,6 +39,9 @@ export default createStore({
         },
         setRoles(context, value) {
             context.commit('saveRoles', value)
+        },
+        setNavicate(context, value) {
+            context.commit('saveNavicate', value)
         },
         setTagName(context, value) {
             context.commit('saveTagName', value)

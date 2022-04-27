@@ -120,7 +120,7 @@ const noticeOut = ()=>{
 }
 const publicNotice = ()=>{
     const arr = noticeTable.value.selection;
-    if(!arr){
+    if(arr.length<1){
         return;
     }
     let str = []
@@ -150,7 +150,7 @@ const publicNotice = ()=>{
 }
 const copyNotice = ()=>{
     const arr = noticeTable.value.selection;
-    if(!arr){
+    if(arr.length<1){
         return;
     }
     let str = []
@@ -180,7 +180,7 @@ const copyNotice = ()=>{
 }
 const cacelNotice = ()=>{
     const arr = noticeTable.value.selection;
-    if(!arr){
+    if(arr.length<1){
         return;
     }
     let str = []
@@ -210,7 +210,7 @@ const cacelNotice = ()=>{
 }
 const deleteItems = ()=>{
     const arr = noticeTable.value.selection;
-    if(!arr){
+    if(arr.length<1){
         return;
     }
     let str = []

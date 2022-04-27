@@ -74,8 +74,8 @@ const createMenuVisible = ref(false)
 const formConfig=[
     {label:'菜单名称:',prop:'menuNm',type:'input',width:'80px',valueWidth:'200px', placeholder:'请输入'},
     {label:'菜单类型:',prop:'menuType',type:'select',width:'80px',valueWidth:'200px', placeholder:'请输入',domain:'AW007'},
-    {label:'创建人:',prop:'createUser',type:'select',width:'80px',valueWidth:'200px', placeholder:'请选择'},
-    {label:'修改人:',prop:'updateUser',type:'select',width:'80px',valueWidth:'200px', placeholder:'请选择'},
+    {label:'创建人:',prop:'createUser',type:'input',width:'80px',valueWidth:'200px', placeholder:'请选择'},
+    {label:'修改人:',prop:'updateUser',type:'input',width:'80px',valueWidth:'200px', placeholder:'请选择'},
 ];
 const searchData={
     menuNm:'',
@@ -89,7 +89,7 @@ const btnConfig=[
 ];
 const deleteItems = ()=>{
     const arr = menuTable.value.selection;
-    if(!arr){
+    if(arr.length<1){
         return;
     }
     let str = []

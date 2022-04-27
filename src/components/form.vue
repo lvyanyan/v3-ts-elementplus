@@ -1,15 +1,15 @@
 <template>
   <el-form ref="searchForm" :inline="true" :model="formData" class="rz-form">
     <el-form-item v-for="item in config"  :label="item.label" :label-width="item.width">
-      <el-input v-if="item.type=='input'" v-model="formData[item.prop]" :placeholder="item.placeholder" :style="`width:${item.valueWidth}`" />
+      <el-input v-if="item.type=='input'" v-model="formData[item.prop]" :placeholder="item.placeholder" :style="`width:${item.valueWidth}`" clearable />
       <rz-select v-if="item.type=='select'" v-model="formData[item.prop]" :domain="item.domain" :placeholder="item.placeholder" :style="`width:${item.valueWidth}`"></rz-select>
-       <el-select v-if="item.type=='aothor-select'" v-model="formData[item.prop]" :style="`width:${item.valueWidth}`"  :placeholder="item.placeholder">
-                    <el-option v-for="item in authorlist" :label="item.roleNm" :value="item.id"></el-option>
+       <el-select v-if="item.type=='aothor-select'" v-model="formData[item.prop]" :style="`width:${item.valueWidth}`" clearable  :placeholder="item.placeholder">
+                    <el-option v-for="item in authorlist" :label="item.roleNm" :value="item.roleId"></el-option>
        </el-select>
        <template v-if="item.type=='date'">
-        <el-date-picker v-model="formData[item.prop.split(',')[0]]" value-format="YYYY-MM-DD"></el-date-picker>
+        <el-date-picker v-model="formData[item.prop.split(',')[0]]" clearable value-format="YYYY-MM-DD"></el-date-picker>
             <span class="date-opreate"> 至 </span>
-        <el-date-picker v-model="formData[item.prop.split(',')[1]]" value-format="YYYY-MM-DD"></el-date-picker>
+        <el-date-picker v-model="formData[item.prop.split(',')[1]]" clearable value-format="YYYY-MM-DD"></el-date-picker>
        </template>
     </el-form-item>
       

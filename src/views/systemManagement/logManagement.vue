@@ -24,7 +24,7 @@ const formConfig=[
     {label:'操作时间:',prop:'optTimeStart,optTimeEnd',type:'date',width:'80px',valueWidth:'200px', placeholder:'请输入'},
     {label:'用户账号:',prop:'userNo',type:'input',width:'80px',valueWidth:'200px', placeholder:'请选择'},
     {label:'用户名:',prop:'userNm',type:'input',width:'80px',valueWidth:'200px', placeholder:'请输入'},
-    {label:'状态:',prop:'requestResultNm',type:'select',width:'80px',valueWidth:'200px', placeholder:'请选择'},
+    {label:'状态:',prop:'requestResultNm',type:'select',width:'80px',domain:'AM002',valueWidth:'200px', placeholder:'请选择'},
     {label:'日志类型:',prop:'logType',type:'select',domain:'AM001',width:'80px',valueWidth:'200px', placeholder:'请输入'},
 ];
 const searchData={
@@ -41,6 +41,7 @@ const btnConfig=[
 
 ];
 const tableConfig=[
+    {label:'日志类型',prop:'logTypeNm',width:''},
     {label:'操作模块',prop:'controllerNm',width:''},
     {label:'操作功能',prop:'methodNm',width:''},
     {label:'操作时间',prop:'operationTime',width:''},

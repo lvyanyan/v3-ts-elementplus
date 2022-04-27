@@ -25,6 +25,11 @@
     margin: 0;
 }
 
+.el-table .el-table__expanded-cell {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
 .rz-delete {
     background-image: url(./assets/delete_icon.png);
 }

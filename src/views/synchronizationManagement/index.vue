@@ -50,7 +50,7 @@ const btnConfig=[
 ];
 const deleteItems = ()=>{
     const arr = userTable.value.selection;
-    if(!arr){
+    if(arr.length<1){
         return;
     }
     let str = []
@@ -80,7 +80,7 @@ const deleteItems = ()=>{
 }
 const destroyUsers = ()=>{
     const arr = userTable.value.selection;
-    if(!arr){
+    if(arr.length<1){
         return;
     }
     let str = []

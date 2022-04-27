@@ -6,9 +6,9 @@
   <el-tabs type="border-card" v-model="activeName" closable @tab-remove="removeTab" @tab-click="tabClick">
     <el-tab-pane
       v-for="item in editableTabs"
-      :key="item.routerUrl"
+      :key="item.iconUrl"
       :label="item.title"
-      :name="item.routerUrl"
+      :name="item.iconUrl"
     >
     </el-tab-pane>
   </el-tabs>
@@ -47,8 +47,8 @@ watch(activeName,(n,o)=>{
 })
 const closeAll = ()=>{
     $store.dispatch('setTagName','/')
-    $store.dispatch('setTags',[{title:'主页',routerUrl:'/'}])
-    localStorage.setItem('tags',JSON.stringify([{title:'主页',routerUrl:'/'}]))
+    $store.dispatch('setTags',[{title:'主页',iconUrl:'/'}])
+    localStorage.setItem('tags',JSON.stringify([{title:'主页',iconUrl:'/'}]))
     route.push('/')
 }
 const removeTab = (targetName: string) => {
@@ -56,16 +56,16 @@ const removeTab = (targetName: string) => {
   let active = activeName.value
   if (active === targetName) {
     tabs.forEach((tab, index) => {
-      if (tab.routerUrl === targetName) {
-        const nextTab = tabs[index + 1] || tabs[index - 1]
+      if (tab.iconUrl === targetName) {
+        const nextTab = tabs[index + 1]?tabs[index + 1]: tabs[index - 1]
         if (nextTab) {
-          active = nextTab.routerUrl
+          active = nextTab.iconUrl
         }
       }
     })
   }
   $store.dispatch('setTagName',active)
-  let tagArray = tabs.filter((tab) => tab.routerUrl !== targetName)
+  let tagArray = tabs.filter((tab) => tab.iconUrl !== targetName)
   $store.dispatch('setTags',tagArray)
   localStorage.setItem('tags',JSON.stringify(tagArray))
 }

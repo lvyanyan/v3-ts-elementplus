@@ -45,7 +45,26 @@ const submit = ()=>{
             }
             localStorage.setItem('userInfo',JSON.stringify(userInfo))
             store.dispatch('setInfo',JSON.stringify(userInfo))
+            http({
+                url:'/menu/search/menu/tree',
+                method:'post',
+            }).then(res=>{
+                if(res.code=200){
+                    store.dispatch('setNavicate',res.data.children)
+                    localStorage.setItem('nav',JSON.stringify(res.data.children))
+                }else{
+                    ElMessage({
+                        type:'error',
+                        message:res.msg
+                    })
+                }
+            })
             route.push({path:'/'})
+        }else{
+            ElMessage({
+                type:'error',
+                message:res.msg
+            })
         }
     })
 }

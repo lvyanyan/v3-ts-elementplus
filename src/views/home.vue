@@ -54,12 +54,14 @@ interface Tree {
         let tags = JSON.parse(localStorage.getItem('tags'))
         let active = localStorage.getItem('active')
         let userInfo = localStorage.getItem('userInfo')
+        let nav = localStorage.getItem('nav')
         if(!userInfo){
             route.push('/login')
         }else{
             await $store.dispatch('setInfo',userInfo)
-            await $store.dispatch('setTags',tags?tags:[{title:'主页',routerUrl:'/'}]);// 修改
+            await $store.dispatch('setTags',tags?tags:[{title:'主页',iconUrl:'/'}]);// 修改
             await $store.dispatch('setTagName',active?active:'/');// 修改
+            await $store.dispatch('setNavicate',nav);
             route.push({path:$store.state.tagName})
             await http({
                 url:'/role/list/all',
@@ -69,20 +71,21 @@ interface Tree {
             })
         }
     })
+const navList = computed(()=>{ return $store.state.navicate });
 const tagArray = computed(()=>{ return $store.state.tags });
 const treeRef = ref<InstanceType<typeof ElTree>>()
 const handleNodeClick = (data: Tree) => {
-  if(data.routerUrl){
-      route.push({path:data.routerUrl})
+  if(data.iconUrl){
+      route.push({path:data.iconUrl})
       let tags = tagArray.value
-      $store.dispatch('setTagName',data.routerUrl)
+      $store.dispatch('setTagName',data.iconUrl)
       let next = tagArray.value.findIndex(item=>{
-          return data.routerUrl == item.routerUrl
+          return data.iconUrl == item.iconUrl
       })
         if(next!=-1){return}
         tags.push({
-            title: data.label,
-            routerUrl: data.routerUrl,
+            title: data.menuNm,
+            iconUrl: data.iconUrl,
         })
         $store.dispatch('setTags',tags)
         localStorage.setItem('tags',JSON.stringify(tags))
@@ -91,12 +94,12 @@ const handleNodeClick = (data: Tree) => {
 const toHome = ()=>{
     route.push('/')
       let next = tagArray.value.findIndex(item=>{
-          return '/' == item.routerUrl
+          return '/' == item.iconUrl
       })
         if(next!=-1){return}
         tagArray.value.push({
             title: '主页',
-            routerUrl: '/',
+            iconUrl: '/',
         })
         $store.dispatch('setTags',tagArray)
 }
@@ -104,57 +107,57 @@ const toHome = ()=>{
 const data: Tree[] = [
   {
       id: '0',
-    label: '主页',
-    routerUrl:'/'
+    menuNm: '主页',
+    iconUrl:'/'
   },
   {
       id: '1',
-    label: '服务管理',
-    routerUrl:'/serviceManagement'
+    menuNm: '服务管理',
+    iconUrl:'/serviceManagement'
   },
   {
       id: '2',
-    label: '通知管理',
-    routerUrl:'/informManagement'
+    menuNm: '通知管理',
+    iconUrl:'/informManagement'
   },
     {
         id: '3',
-    label: '同步管理',
-    routerUrl:'/synchronizationManagement'
+    menuNm: '同步管理',
+    iconUrl:'/synchronizationManagement'
   },
     {
         id: '4',
-    label: '报表管理',
-    routerUrl:'/reportManagement'
+    menuNm: '报表管理',
+    iconUrl:'/reportManagement'
   },
     {
         id: '5',
-    label: '系统管理',
+    menuNm: '系统管理',
     children:[
         {
             id: '5-1',
-            label: '用户管理',
-            routerUrl:'/systemManagement/userManagement'
+            menuNm: '用户管理',
+            iconUrl:'/systemManagement/userManagement'
         },
         {
             id: '5-2',
-            label: '权限管理',
-            routerUrl:'/systemManagement/authorizationManagement'
+            menuNm: '权限管理',
+            iconUrl:'/systemManagement/authorizationManagement'
         },
         {
             id: '5-3',
-            label: '菜单管理',
-            routerUrl:'/systemManagement/menuManagement'
+            menuNm: '菜单管理',
+            iconUrl:'/systemManagement/menuManagement'
         },
         {
             id: '5-4',
-            label: '数据字典',
-            routerUrl:'/systemManagement/dataDictionary'
+            menuNm: '数据字典',
+            iconUrl:'/systemManagement/dataDictionary'
         },
         {
             id: '5-5',
-            label: '日志管理',
-            routerUrl:'/systemManagement/logManagement'
+            menuNm: '日志管理',
+            iconUrl:'/systemManagement/logManagement'
         },
     ]
   },
@@ -163,7 +166,7 @@ const data: Tree[] = [
 
 const defaultProps = {
   children: 'children',
-  label: 'label',
+  label: 'menuNm',
 }
 </script>
 <style lang='less' scoped>

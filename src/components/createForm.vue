@@ -7,7 +7,7 @@
             <rz-select v-if="item.type=='select'" v-model="formData[item.prop]" :domain="item.domain" :placeholder="item.placeholder">
             </rz-select>
             <el-select v-if="item.type=='aothor-select'" v-model="formData[item.prop]"  :placeholder="item.placeholder">
-                    <el-option v-for="item in authorlist" :label="item.roleNm" :value="item.id"></el-option>
+                    <el-option v-for="item in authorlist" :label="item.roleNm" :value="item.roleId"></el-option>
             </el-select>
             </el-form-item>
         </el-form>

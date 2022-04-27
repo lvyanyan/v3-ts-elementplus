@@ -1,5 +1,5 @@
 <template>
-  <el-table :data="tableData" :border="border" style="width" max-height="620" :row-class-name="tableRowClassName" @row-click="changeDic" :header-row-class-name="headerStyle" @selection-change="getSelection">
+  <el-table :data="tableData" :border="border" :row-key="expand?'id':''" style="width" max-height="620" :row-class-name="tableRowClassName" @row-click="changeDic" :header-row-class-name="headerStyle" @selection-change="getSelection">
     <el-table-column v-if="check" type="selection" width="55" />
     <el-table-column v-if="index" type="index" label="序号" width="55" />
     <el-table-column type="expand" v-if="expand">
@@ -7,12 +7,11 @@
         <el-table :data="props.row.children" :header-row-class-name="headerStyle" :row-class-name="tableRowClassName">
             <el-table-column v-if="expandIndex" type="index" label="序号" width="55" />
             <el-table-column v-for="item in expandConfig" :prop="item.prop" :label="item.label" :width="item.width" >
-                <template #default="scope" v-if="item.edit">
-                    <span class="edit-cell" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
+                <template #default="scope" v-if="item.ellipsis">
+                    <div :class="scope.row.ellipsis=='true'?'ellipsis-cell':''"><el-icon v-if="scope.row.ellipsis=='true'" style="cursor:pointer" @click.stop="hidden(scope.row)"><arrow-right /></el-icon><el-icon style="cursor:pointer" v-else @click.stop="hidden(scope.row)"><arrow-down /></el-icon><span>{{scope.row[item.prop]}}</span></div>
                 </template>
             </el-table-column>
-            <el-table-column label="操作" v-if="expandOperate">
-
+            <el-table-column label="操作" v-if="expandOperate" >
                 <template #default="scope">
                     <div>
                         <el-tooltip :content="item.text" placement="top" v-for="item in expandOperation">
@@ -20,7 +19,6 @@
                         </el-tooltip>
                     </div>
                 </template>
-                
             </el-table-column>
         </el-table>
       </template>
@@ -63,6 +61,7 @@
 
 <script lang="ts" setup>
 import {ref, onMounted} from 'vue'
+import {ArrowRight,ArrowDown} from '@element-plus/icons-vue'
 import http from '/src/api/http'
 const props = defineProps({
  	config: Array,
@@ -77,6 +76,7 @@ const props = defineProps({
      expandIndex:Boolean,
      expandOperate:Boolean,
      expandConfig: Array,
+     expandOperation:Array,
      expand: Boolean,
      border:{
          type:Boolean,
@@ -107,6 +107,14 @@ const changeDic = (row,col)=>{
         }
     }
 }
+const hidden = (row)=>{
+    console.log(row.ellipsis,row.ellipsis=='true')
+    if(row.ellipsis=='true'){
+        row.ellipsis = 'false';
+    }else{
+        row.ellipsis = 'true'
+    }
+}
 const onload=(param)=>{
     let params = props.dataParams?props.dataParams:{};
     let page = {
@@ -129,6 +137,16 @@ const onload=(param)=>{
             total.value = res.data.total?res.data.total:0;
             if(props.dataUrl == '/dic/domain/list'){
                 emit("dicDomain",res.data.records[0])
+            }
+            if(props.dataUrl == '/service/list'){
+                for(let i=0;i<tableData.value.length;i++){
+                    tableData.value[i].id = i;
+                    for(let z=0;z<tableData.value[i].children.length;z++){
+                        tableData.value[i].children[z].ellipsis = tableData.value[i].children[z].hidden
+                    }
+                    
+                }
+                console.log(tableData.value)
             }
           }
     })
@@ -194,6 +212,11 @@ defineExpose({onload,selection})
     }
     :deep(.cell){
         text-align:center;
+        .ellipsis-cell{
+            overflow:hidden;
+            white-space:nowrap;
+            text-overflow:ellipsis;
+        }
         .edit-cell{
             cursor:pointer;
             color:#e4393c;

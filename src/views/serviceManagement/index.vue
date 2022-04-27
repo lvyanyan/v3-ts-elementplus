@@ -1,10 +1,9 @@
 <!--  -->
 <template>
 <div class='box'>
-
     <rz-form :config="formConfig" @submit="submit" :data="searchData"></rz-form>
-    <rz-btns :config="btnConfig" @createService="createService" @updateService="updateService" @deleteService="deleteService" @updateVersion="updateVersion"></rz-btns>
-    <rz-table ref="serviceTable" :config="tableConfig" expand-index expand-operate :expandOperation="expandOperation" :expandConfig="expandConfig" :border="false" expand width="1567px" index check :opeation="tableOperation" @deleteItem="deleteItem" @destroyUser="destroyUser" @resetPwd="resetPwd" @personSetting="personSetting" data-url="/user/list" data-method="post" >
+    <rz-btns :config="btnConfig" @createService="createService" @updateService="updateService" @deleteService="deleteService" @createVersion="createVersion"></rz-btns>
+    <rz-table ref="serviceTable" :config="tableConfig" expand-index expand-operate :expand-operation="expandOperation" :expandConfig="expandConfig" :border="false" expand width="1567px" @publicVersion="publicVersion" @recallVersion="recallVersion" @deleteVersion="deleteVersion" @updateVersion="updateVersion" index check data-url="/service/list" >
     </rz-table>
     <rz-dialog v-if="createVisible" :createVisible="createVisible" :dialogTitle="serviceTitle"  @onSubmit="serverSubmit" @outForm="serverOut" width="800px">
     <template #content>
@@ -17,42 +16,45 @@
                 </el-col>
                 <el-col :span="12">
                     <el-form-item label="创建人">
-                        <el-input v-model="serviceForm.serviceNm"></el-input>
+                        <el-input v-model="serviceForm.createUser"></el-input>
                     </el-form-item>
                 </el-col>
             </el-row>
             <el-row>
-                <el-col :span="12">
+                <!-- <el-col :span="12">
                     <el-form-item label="服务类别">
                         <el-input v-model="serviceForm.serviceNm"></el-input>
                     </el-form-item>
-                </el-col>
+                </el-col> -->
                 <el-col :span="12">
                     <el-form-item label="服务端口">
-                        <el-input v-model="serviceForm.serviceNm"></el-input>
+                        <el-input v-model="serviceForm.servicePort"></el-input>
                     </el-form-item>
                 </el-col>
             </el-row>
         </el-form>
     </template>
     </rz-dialog>
-    <rz-dialog v-if="updateVisible" :createVisible="updateVisible" dialogTitle="更新版本"  @onSubmit="updateSubmit" @outForm="updateOut" width="600px">
+    <rz-dialog v-if="updateVisible" :createVisible="updateVisible" :dialogTitle="versionTitle"  @onSubmit="updateSubmit" @outForm="updateOut" width="600px">
     <template #content>
         <el-form :model="versionForm" label-width="100px" label-position="right">
-            <el-form-item label="添加版本级别">
-                <el-input></el-input>
+            <!-- <el-form-item label="添加版本级别">
+                <el-input v-model='versionForm.level'></el-input>
+            </el-form-item> -->
+            <el-form-item label="是否强制发布">
+                <rz-select v-model='versionForm.ifImposed' domain="AW012"></rz-select>
             </el-form-item>
             <el-form-item label="服务版本">
-                <el-input></el-input>
+                <el-input v-model='versionForm.versionNumber'></el-input>
             </el-form-item>
             <el-form-item label="创建人">
-                <el-input></el-input>
+                <el-input v-model='versionForm.createUser'></el-input>
             </el-form-item>
             <el-form-item label="安装包上传">
                 <rz-upload ref="upload" url="/api/upload/" merge-url="/api/merge"></rz-upload>
             </el-form-item>
             <el-form-item label="描述信息">
-                <el-input></el-input>
+                <el-input v-model='versionForm.versionDescription'></el-input>
             </el-form-item>
         </el-form>
     </template>
@@ -63,9 +65,10 @@
 <script lang='ts' setup>
 import { ref, getCurrentInstance,reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus';   
-import {ArrowRight,ArrowDown} from '@element-plus/icons-vue'
+import {resetObj} from '/src/utils/public'
 import store from '/src/store'
 import http from '/src/api/http'
+import RzSelect from '../../components//rzSelect.vue'
 import RzTable from '../../components/table.vue'
 import RzForm from '../../components/form.vue'
 import RzBtns from '../../components/buttons.vue'
@@ -75,62 +78,149 @@ import RzUpload from '../../components/upload.vue'
 let createVisible = ref(false)
 let updateVisible = ref(false)
 const formConfig=[
-    {label:'服务名称:',prop:'userLoginNm',type:'input',width:'80px',valueWidth:'160px', placeholder:'请输入'},
-    {label:'服务标识:',prop:'userNm',type:'input',width:'80px',valueWidth:'160px', placeholder:'请输入'},
-    {label:'服务类型:',prop:'userNm',type:'input',width:'80px',valueWidth:'160px', placeholder:'请输入'},
-    {label:'发布时间:', prop:'roleId',type:'aothor-select',width:'80px',valueWidth:'160px', placeholder:'请选择',domain:'roleId'},
-    {label:'版本号:',prop:'status',type:'select',width:'80px',valueWidth:'160px', placeholder:'请选择',domain:'status'},
+    {label:'服务名称:',prop:'serviceNm',type:'input',width:'80px',valueWidth:'160px', placeholder:'请输入'},
+    {label:'服务标识:',prop:'serviceId',type:'input',width:'80px',valueWidth:'160px', placeholder:'请输入'},
+    {label:'创建人:',prop:'createUser',type:'input',width:'80px',valueWidth:'160px', placeholder:'请输入'},
+    // {label:'服务类型:',prop:'userNm',type:'input',width:'80px',valueWidth:'160px', placeholder:'请输入'},
+    // {label:'发布时间:', prop:'',type:'aothor-select',width:'80px',valueWidth:'160px', placeholder:'请选择',domain:'roleId'},
+    // {label:'版本号:',prop:'status',type:'select',width:'80px',valueWidth:'160px', placeholder:'请选择',domain:'status'},
 ];
 const btnConfig=[
     {text:'新建服务', class:'bg-blue',functionName:'createService'},
     {text:'修改服务', class:'bg-blue',functionName:'updateService'},
     {text:'删除服务', class:'bg-blue',functionName:'deleteService'},
-    {text:'更新版本', class:'bg-blue',functionName:'updateVersion'},
+    {text:'更新版本', class:'bg-blue',functionName:'createVersion'},
 ];
 const serviceTitle = ref('新建服务')
 const serviceForm=reactive({
-    serviceNm:''
+    serviceNm:'',
+    servicePort:'',
+    createUser:'',
+    serviceId:''
 })
 const createService = ()=>{
     serviceTitle.value = '新建服务'
     createVisible.value = true;
 }
 const updateService = ()=>{
+    const arr = serviceTable.value.selection;
+    if(arr.length<1){
+        ElMessage({
+            type:'warning',
+            message:'必须选择一条服务'
+        })
+        return;
+    }
+    if(arr.length>1){
+        ElMessage({
+            type:'warning',
+            message:'必须选择一条服务'
+        })
+        return;
+    }
+    serviceForm.serviceId = arr[0].serviceId
+    serviceForm.serviceNm = arr[0].serviceNm
+    serviceForm.createUser = arr[0].createUser
+    serviceForm.servicePort = arr[0].servicePort
     serviceTitle.value = '修改服务'
     createVisible.value = true;
 }
 const serverSubmit = ()=>{
-
+    let url = serviceTitle.value == '修改服务'?'/service/update':'/service/add'
+    http({
+        url,
+        method:'post',
+        data:serviceForm
+    }).then(res=>{
+        if(res.code==200){
+            ElMessage({
+                type:'success',
+                message:'成功'
+            })
+            serverOut();
+        }else{
+            ElMessage({
+                type:'error',
+                message:res.msg
+            })
+        }
+    })
 }
 const serverOut = ()=>{
+    resetObj(serviceForm)
     createVisible.value = false;
+    submit();
 }
 const versionForm = reactive({
-
+    versionId:'',
+    versionNumber:'',
+    createUser:'',
+    ifImposed:'',
+    versionDescription:'',
+    serviceId:''
 })
-const updateVersion = ()=>{
+const versionTitle = ref('更新版本')
+const createVersion = ()=>{
+    const arr = serviceTable.value.selection;
+    if(arr.length<1){
+        ElMessage({
+            type:'warning',
+            message:'必须选择一条服务'
+        })
+        return;
+    }
+    if(arr.length>1){
+        ElMessage({
+            type:'warning',
+            message:'必须选择一条服务'
+        })
+        return;
+    }
+    versionTitle.value = '更新版本'
     updateVisible.value = true;
+    versionForm.serviceId = arr[0].serviceId;
+    versionForm.createUser = arr[0].createUser;
 }
 const updateSubmit = ()=>{
-
+    let url = versionTitle.value == '更新版本'?'/service/version/add':'/service/version/update'
+    http({
+        url,
+        method:'post',
+        data:versionForm
+    }).then(res=>{
+        if(res.code=="200"){
+            ElMessage({
+                type:'success',
+                message:'更新成功'
+            })
+            updateOut()
+        }else{
+            ElMessage({
+                type:'error',
+                message:res.msg
+            })
+        }
+    })
 }
 const updateOut = ()=>{
+    resetObj(versionForm);
     updateVisible.value = false;
+    submit()
 }
 const deleteService = ()=>{
     const arr = serviceTable.value.selection;
-    if(!arr){
+    if(arr.length<1){
         return;
     }
     let str = []
     arr.forEach(item=>{
-        str.push(item.userNo)
+        str.push(item.serviceId)
     })
     str = str.join(',')
     http({
-        url:'/user/delete',
+        url:'/service/delete',
         method:'post',
-        data:{userNo:str}
+        data:{serviceId:str}
     }).then(res=>{
         if(res.code=="200"){
             ElMessage({
@@ -148,35 +238,108 @@ const deleteService = ()=>{
     })
 }
 const searchData = {
-    userLoginNm:'',
-    userNm:'',
-    roleId:'',
-    status:''
+    serviceId:'',
+    serviceNm:'',
+    createUser:'',
 }
 const expandOperation=[
-    {text:'发布', class:'rz-destroy',functionName:'publicVersion'},
-    {text:'修改', class:'rz-delete',functionName:'updateVersion'},
+    {text:'发布', class:'rz-public',functionName:'publicVersion'},
+    {text:'修改', class:'rz-edit',functionName:'updateVersion'},
+    {text:'撤回', class:'rz-permission',functionName:'recallVersion'},
     {text:'删除', class:'rz-delete',functionName:'deleteVersion'},
 ]
+const publicVersion = (row)=>{
+    http({
+        url:'/service/version/release',
+        method:'post',
+        data:{versionId:row.versionId}
+    }).then(res=>{
+        if(res.code=="200"){
+            ElMessage({
+                type:'success',
+                message:'发布成功'
+            })
+            submit()
+        }else{
+            ElMessage({
+                type:'error',
+                message:res.msg
+            })
+        }
+        
+    })
+}
+const recallVersion = (row)=>{
+    http({
+        url:'/service/version/recall',
+        method:'post',
+        data:{versionId:row.versionId}
+    }).then(res=>{
+        if(res.code=="200"){
+            ElMessage({
+                type:'success',
+                message:'撤回成功'
+            })
+            submit()
+        }else{
+            ElMessage({
+                type:'error',
+                message:res.msg
+            })
+        }
+        
+    })
+}
+const updateVersion = (row)=>{
+    versionTitle.value = '修改版本'
+    versionForm.versionId = row.versionId;
+    versionForm.versionNumber = row.versionNumber;
+    versionForm.createUser = row.createUser;
+    versionForm.ifImposed = row.ifImposed;
+    versionForm.versionDescription = row.versionDescription;
+    updateVisible.value = true;
+}
+const deleteVersion = (row)=>{
+    http({
+        url:'/service/version/delete',
+        method:'post',
+        data:{versionId:row.versionId}
+    }).then(res=>{
+        if(res.code=="200"){
+            ElMessage({
+                type:'success',
+                message:'删除成功'
+            })
+            submit()
+        }else{
+            ElMessage({
+                type:'error',
+                message:res.msg
+            })
+        }
+        
+    })
+}
 const expandConfig = [
-    {label:'版本号',prop:'userNo',width:''},
-    {label:'发布时间',prop:'userNo',width:''},
-    {label:'数据包大小',prop:'userNo',width:''},
-    {label:'版本状态',prop:'userNo',width:''},
-    {label:'类别',prop:'userNo',width:''},
-    {label:'描述',prop:'userNo',width:''},
-    {label:'创建人',prop:'userNo',width:''},
+    {label:'版本号',prop:'versionNumber',width:'85px'},
+    {label:'发布时间',prop:'releaseDate',width:'200px'},
+    {label:'数据包大小',prop:'fileSize',width:'99px'},
+    {label:'版本状态',prop:'versionStatusNm',width:'129px'},
+    {label:'类别',prop:'versionCategoryNm',width:'120px'},
+    {label:'创建人',prop:'createUser',width:'84px'},
+    {label:'描述',prop:'versionDescription',width:'245px',ellipsis:true,tooltip:true},
+    {label:'发布人',prop:'releaseUser',width:'84px'},
 ]
 const tableConfig=[
-    {label:'服务名称',prop:'userNo',width:''},
-    {label:'服务标识',prop:'userNm',width:''},
-    {label:'端口号',prop:'userNm',width:''},
-    {label:'服务类型',prop:'createDate',width:''},
-    {label:'创建人',prop:'userNm',width:''},
-    {label:'最新版本',prop:'status',width:''},
-    {label:'最新版本发布时间',prop:'role',width:''},
-    {label:'最新版本数据大小',prop:'phone',width:''},
-    {label:'最新版本状态',prop:'email',width:''},
+    {label:'服务名称',prop:'serviceNm',width:'264px'},
+    {label:'服务标识',prop:'serviceId',width:'175px'},
+    {label:'端口号',prop:'servicePort',width:'137px'},
+    // {label:'服务类型',prop:'createDate',width:''},
+    {label:'创建人',prop:'createUser',width:'139px'},
+    {label:'最新版本',prop:'lastVersionNumber',width:''},
+    {label:'最新版本发布时间',prop:'lastVersionDate',width:'238px'},
+    {label:'最新版本数据大小',prop:'lastVersionSize',width:'162px'},
+    {label:'最新版本状态',prop:'lastVersionStatusNm',width:'137px'},
 ]
 const serviceTable = ref()
 const refs = getCurrentInstance();
@@ -246,8 +409,5 @@ const submit=(form)=>{
            text-align:center;
            line-height:50px;
         }
-}
-:deep(.el-table__expand-column){
-    
 }
 </style>
