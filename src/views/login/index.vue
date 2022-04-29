@@ -1,17 +1,28 @@
 <!--  -->
 <template>
-<div class=''>
-    <div class="header"></div>
-    <el-form :model="loginForm">
-        <el-form-item label="帐号">
-            <el-input v-model="loginForm.userLoginNm"></el-input>
-        </el-form-item>
-        <el-form-item label="密码">
-            <el-input type="password" v-model="loginForm.userPassword"></el-input>
-        </el-form-item>
-    </el-form>
+<div class='bg'>
+    <div class="left-box"></div>
+    <div class="content">
+    <div class="header">
+        <div class="logo">
+            <img src="/src/assets/logo.png">
+        </div>
+        <div class="title">现场审计作业服务端</div>
+    </div>
+    <div class="content-box">
+        <div></div>
+        <el-form :model="loginForm">
+            <el-form-item >
+                <el-input class="user-login" placeholder="用户名" v-model="loginForm.userLoginNm"></el-input>
+            </el-form-item>
+            <el-form-item >
+                <el-input class="user-pwd" placeholder="密码" type="password" v-model="loginForm.userPassword"></el-input>
+            </el-form-item>
+        </el-form>
+    </div>
     <div class="footer">
-        <el-button type="primary" @click="submit">登陆</el-button>
+        <el-button type="primary" @click="submit">登录</el-button>
+    </div>
     </div>
 </div>
 </template>
@@ -71,5 +82,68 @@ const submit = ()=>{
 </script>
 <style lang='less' scoped>
 //@import url(); 引入公共css类
-
+.bg{
+    width:100%;
+    height:100%;
+    .left-box{
+        width:calc(100% - 533px);
+        height:100%;
+        float:left;
+        background-image:url('/src/assets/loginBG.png');
+        background-size:cover;
+        background-position:center center;
+        background-repeat:no-repeat;
+    }
+    .content{
+        float:right;
+        width:531px;
+        height:100%;
+        background:#fff;
+        .header{
+            text-align:center;
+            margin-top:311px;
+            .logo{
+                margin:0 auto;
+                width:59px;
+                height:59px;
+                img{
+                    width:100%;
+                    height:100%;
+                }
+            }
+            .title{
+                margin-top:21px;
+                font-size:24px;
+                font-weight:bold;
+            }
+        }
+        .content-box{
+            padding-left:100px;
+            padding-right:101px;
+            margin-top:76px;
+            :deep(.el-form-item){
+                margin-bottom:0;
+            }
+            .user-login,.user-pwd{
+                width:330px;
+                height:50px;
+                :deep(.el-input__inner){
+                    height:100%;
+                }
+            }
+            .user-pwd{
+                margin-top:25px;
+            }
+        }
+        .footer{
+            padding-left:99px;
+            padding-right:102px;
+            margin-top:25px;
+            :deep(.el-button){
+                width:330px;
+                height:50px;
+            }
+        }
+    }
+}
 </style>

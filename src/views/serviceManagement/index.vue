@@ -51,7 +51,7 @@
                 <el-input v-model='versionForm.createUser'></el-input>
             </el-form-item>
             <el-form-item label="安装包上传">
-                <rz-upload ref="upload" url="/api/upload/" merge-url="/api/merge"></rz-upload>
+                <rz-upload ref="upload" :form="{versionId:versionForm.versionId}" url="/service/synchronize/server/upload" merge-url="/api/merge"></rz-upload>
             </el-form-item>
             <el-form-item label="描述信息">
                 <el-input v-model='versionForm.versionDescription'></el-input>
@@ -59,6 +59,19 @@
         </el-form>
     </template>
     </rz-dialog>
+    <el-dialog v-if="uploadVisible" v-model="uploadVisible" title="文件上传中" destroy-on-close :close-on-click-modal="false" draggable center>
+        <div class="file-box">
+            <div v-for="(item,index) in fileList">
+                <div class="file-name">
+                    <el-tooltip :content="item.name" placement="top">
+                    <div>{{item.name}}</div>
+                    </el-tooltip>
+                    <div>{{`${item.up}/${item.size}`}}</div>
+                </div>
+                <el-progress :percentage="item.percent" class="progress"></el-progress>
+            </div>
+        </div>
+    </el-dialog>
 </div>
 </template>
 
@@ -77,6 +90,7 @@ import RzUpload from '../../components/upload.vue'
 
 let createVisible = ref(false)
 let updateVisible = ref(false)
+let uploadVisible = ref(false)
 const formConfig=[
     {label:'服务名称:',prop:'serviceNm',type:'input',width:'80px',valueWidth:'160px', placeholder:'请输入'},
     {label:'服务标识:',prop:'serviceId',type:'input',width:'80px',valueWidth:'160px', placeholder:'请输入'},
@@ -151,10 +165,11 @@ const serverOut = ()=>{
     createVisible.value = false;
     submit();
 }
+let userInfo = JSON.parse(localStorage.getItem('userInfo'))
 const versionForm = reactive({
     versionId:'',
     versionNumber:'',
-    createUser:'',
+    createUser:userInfo.userNm,
     ifImposed:'',
     versionDescription:'',
     serviceId:''
@@ -181,6 +196,7 @@ const createVersion = ()=>{
     versionForm.serviceId = arr[0].serviceId;
     versionForm.createUser = arr[0].createUser;
 }
+const fileList = ref([])
 const updateSubmit = ()=>{
     let url = versionTitle.value == '更新版本'?'/service/version/add':'/service/version/update'
     http({
@@ -189,11 +205,14 @@ const updateSubmit = ()=>{
         data:versionForm
     }).then(res=>{
         if(res.code=="200"){
-            ElMessage({
-                type:'success',
-                message:'更新成功'
-            })
-            updateOut()
+            versionForm.versionId = res.data.versionId
+            upload.value.submitFiles({versionId:versionForm.versionId})
+            fileList.value = upload.value.fileList;
+                ElMessage({
+                    type:'success',
+                    message:'更新成功'
+                })
+                updateOut()
         }else{
             ElMessage({
                 type:'error',
@@ -205,7 +224,8 @@ const updateSubmit = ()=>{
 const updateOut = ()=>{
     resetObj(versionForm);
     updateVisible.value = false;
-    submit()
+    uploadVisible.value = true;
+    submit();
 }
 const deleteService = ()=>{
     const arr = serviceTable.value.selection;
@@ -322,6 +342,7 @@ const deleteVersion = (row)=>{
 }
 const expandConfig = [
     {label:'版本号',prop:'versionNumber',width:'85px'},
+    {label:'服务类型',prop:'serviceTypeNm',width:'116px'},
     {label:'发布时间',prop:'releaseDate',width:'200px'},
     {label:'数据包大小',prop:'fileSize',width:'99px'},
     {label:'版本状态',prop:'versionStatusNm',width:'129px'},
@@ -342,6 +363,7 @@ const tableConfig=[
     {label:'最新版本状态',prop:'lastVersionStatusNm',width:'137px'},
 ]
 const serviceTable = ref()
+const upload = ref()
 const refs = getCurrentInstance();
 const submit=(form)=>{
     serviceTable.value.onload(form)
@@ -394,6 +416,26 @@ const submit=(form)=>{
         .el-checkbox__input.is-checked + .el-checkbox__label{
             color:#191919;
         }
+}
+.file-box{
+    display: inline-block;
+    width: 330px;
+    margin-left: 23px;
+    .file-name{
+        width:100px;
+        float:left;
+        div{
+            overflow:hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    }
+    .el-progress{
+        padding-top:40px;
+        .el-progress-bar__outer{
+            height:10px;
+        }
+    }
 }
 :deep(.el-dialog .set-box){
         float:left;

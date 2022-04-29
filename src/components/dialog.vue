@@ -36,7 +36,11 @@ const outForm=()=>{
         margin:0;
     }
 }
+.btns{
+    margin-bottom:0;
+}
 :deep(.el-dialog--center .el-dialog__body){
+    padding:50px;
     text-align:center;
 }
 </style>

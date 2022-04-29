@@ -1,17 +1,17 @@
 <template>
-  <el-table :data="tableData" :border="border" :row-key="expand?'id':''" style="width" max-height="620" :row-class-name="tableRowClassName" @row-click="changeDic" :header-row-class-name="headerStyle" @selection-change="getSelection">
+  <el-table :data="tableData" :border="border" :row-key="expand?'id':''" style="width" :height="height"  :row-class-name="tableRowClassName" @row-click="changeDic" :header-row-class-name="headerStyle" @selection-change="getSelection">
     <el-table-column v-if="check" type="selection" width="55" />
     <el-table-column v-if="index" type="index" label="序号" width="55" />
     <el-table-column type="expand" v-if="expand">
       <template #default="props">
-        <el-table :data="props.row.children" :header-row-class-name="headerStyle" :row-class-name="tableRowClassName">
-            <el-table-column v-if="expandIndex" type="index" label="序号" width="55" />
+        <el-table :data="props.row.children" :header-row-class-name="headerStyle" >
+            <el-table-column v-if="expandIndex" type="index" label="序号" width="72" />
             <el-table-column v-for="item in expandConfig" :prop="item.prop" :label="item.label" :width="item.width" >
                 <template #default="scope" v-if="item.ellipsis">
                     <div :class="scope.row.ellipsis=='true'?'ellipsis-cell':''"><el-icon v-if="scope.row.ellipsis=='true'" style="cursor:pointer" @click.stop="hidden(scope.row)"><arrow-right /></el-icon><el-icon style="cursor:pointer" v-else @click.stop="hidden(scope.row)"><arrow-down /></el-icon><span>{{scope.row[item.prop]}}</span></div>
                 </template>
             </el-table-column>
-            <el-table-column label="操作" v-if="expandOperate" >
+            <el-table-column label="操作" v-if="expandOperate" width="137">
                 <template #default="scope">
                     <div>
                         <el-tooltip :content="item.text" placement="top" v-for="item in expandOperation">
@@ -23,7 +23,7 @@
         </el-table>
       </template>
     </el-table-column>
-    <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="item.width" >
+    <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="item.width" :show-overflow-tooltip="item.ellipsis">
           <template #default="scope" v-if="item.edit">
             <span class="edit-cell" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
           </template>
@@ -40,17 +40,19 @@
         
     </el-table-column>
   </el-table>
-  <div class="page">
+  <div class="page" v-if="!nopage">
       <el-pagination background style="display:inline-block;" layout="slot" :total="total" >
         <span class="el-pagination_total">当前第{{currentPage}}页，共{{endPage}}页，共{{total}}条</span>
       </el-pagination>
-      <el-pagination background style="display:inline-block;" layout="slot,prev" prev-text="上一页" @prev-click="pagePre" :total="total">
+      <el-pagination background style="display:inline-block;" layout="slot" prev-text="上一页" v-model="currentPage" @prev-click="pagePre" :total="total">
         <el-select v-model="pageSize" class="page-size" @change="sizeChange">
             <el-option v-for="item in pageSizes" :value="item.value" :label="item.label"></el-option>
         </el-select>
         <button class="first-btn btn-prev" @click="turnPage('1')">首页</button>
+        <button class="first-btn btn-prev" :disabled="currentPage==1" @click="pagePre">上一页</button>
       </el-pagination>
-      <el-pagination background style="display:inline-block;" layout="next,slot" next-text="下一页" @next-click="pageNext" :total="total">
+      <el-pagination background style="display:inline-block;" layout="slot" next-text="下一页" v-model="currentPage" @next-click="pageNext" :total="total">
+        <button class="first-btn btn-prev" @click="pageNext" :disabled="currentPage==endPage">下一页</button>
         <button class="first-btn btn-prev" @click="turnPage(endPage)">末页</button>
         <span class="el-pagination_total">前往
         <el-input v-model="currentPage" class="current-page" @blur="turnPage(currentPage)"></el-input>
@@ -73,11 +75,16 @@ const props = defineProps({
          type:String,
          default:'get'
      },
+     nopage:Boolean,
      expandIndex:Boolean,
      expandOperate:Boolean,
      expandConfig: Array,
      expandOperation:Array,
      expand: Boolean,
+     height:{
+         type:String,
+         default:"528px"
+     },
      border:{
          type:Boolean,
          default:true
@@ -108,7 +115,6 @@ const changeDic = (row,col)=>{
     }
 }
 const hidden = (row)=>{
-    console.log(row.ellipsis,row.ellipsis=='true')
     if(row.ellipsis=='true'){
         row.ellipsis = 'false';
     }else{
@@ -121,7 +127,9 @@ const onload=(param)=>{
         pageNumber:currentPage.value,
         pageSize:pageSize.value
     }
-    Object.assign(params,page)
+    if(!props.nopage){
+        Object.assign(params,page)
+    }
     if(param){
         Object.assign(params,param)
     }
@@ -141,12 +149,12 @@ const onload=(param)=>{
             if(props.dataUrl == '/service/list'){
                 for(let i=0;i<tableData.value.length;i++){
                     tableData.value[i].id = i;
-                    for(let z=0;z<tableData.value[i].children.length;z++){
-                        tableData.value[i].children[z].ellipsis = tableData.value[i].children[z].hidden
+                    if(tableData.value[i].children){
+                        for(let z=0;z<tableData.value[i].children.length;z++){
+                            tableData.value[i].children[z].ellipsis = tableData.value[i].children[z].hidden
+                        }
                     }
-                    
                 }
-                console.log(tableData.value)
             }
           }
     })
@@ -193,6 +201,7 @@ defineExpose({onload,selection})
 <style lang="less" scoped>
 .el-table{
     :deep(.el-table__cell){
+        height:48px;
         text-align:center;
     }
     :deep(th.el-table__cell){
@@ -208,7 +217,7 @@ defineExpose({onload,selection})
         background:#FAFAFA;
     }
     :deep(.el-table__expanded-cell){
-        padding-left:110px;
+        padding-left:178px;
     }
     :deep(.cell){
         text-align:center;
@@ -225,7 +234,7 @@ defineExpose({onload,selection})
     }
 }
 .page{
-    margin-top:20px;
+    margin-top:28px;
     text-align:right;
     .el-pagination.is-background{
         font-size:12px;

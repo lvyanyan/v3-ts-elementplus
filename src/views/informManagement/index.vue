@@ -247,7 +247,7 @@ const noticeForm = reactive({
     target:'0'
 });
 const tableConfig=[
-    {label:'消息编号',prop:'noticeNo',width:''},
+    // {label:'消息编号',prop:'noticeNo',width:''},
     {label:'通知名称',prop:'noticeNm',width:'',edit:true},
     {label:'通知内容',prop:'noticeDetail',width:''},
     {label:'通知类型',prop:'noticeTypeNm',width:''},

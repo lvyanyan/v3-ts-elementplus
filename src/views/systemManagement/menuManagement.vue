@@ -2,8 +2,8 @@
 <template>
 <div class='box'>
     <rz-form :config="formConfig" @submit="submit" :data="searchData"></rz-form>
-    <rz-btns :config="btnConfig" @createMenu="createMenu"></rz-btns>
-    <rz-table ref="menuTable" :config="tableConfig" width="1567px" data-url="/menu/list" index check></rz-table>
+    <rz-btns :config="btnConfig" @createMenu="createMenu" @deleteItems="deleteItems"></rz-btns>
+    <rz-table ref="menuTable" :config="tableConfig" width="1567px" nopage data-url="/menu/list" index check></rz-table>
         <rz-dialog :createVisible="createMenuVisible" dialogTitle="添加菜单"  @onSubmit="menuSubmit" @outForm="menuOut" width="600px">
         <template #content>
             <el-form :model="menuForm" inline :rules="menuRules" label-width="80px" label-position="right">
@@ -94,13 +94,13 @@ const deleteItems = ()=>{
     }
     let str = []
     arr.forEach(item=>{
-        str.push(item.roleId)
+        str.push(item.id)
     })
     str = str.join(',')
     http({
         url:'/menu/delete',
         method:'post',
-        data:{id:str}
+        data:{ids:str}
     }).then(res=>{
         if(res.code=="200"){
             ElMessage({
@@ -114,7 +114,6 @@ const deleteItems = ()=>{
                 message:res.msg
             })
         }
-        
     })
 }
 const createMenu = ()=>{
@@ -135,6 +134,10 @@ const menuOut=(val)=>{
     submit()
 }
 const menuSubmit=(val)=>{
+    let obj = menuList.value.find(item=>{
+        return item.id == menuForm.parentId
+    })
+    menuForm.menuPath = obj.menuPath
     http({
         url:'/menu/add',
         method:'post',
@@ -162,6 +165,7 @@ const menuForm = reactive({
     menuOrder:'',
     menuType:'',
     remark:'',
+    menuPath:'',
     menuVisible:''
 })
 const menuRules = {
@@ -177,7 +181,7 @@ const tableConfig=[
     {label:'菜单类型',prop:'menuType',width:''},
     {label:'访问地址',prop:'iconUrl',width:''},
     {label:'菜单顺序',prop:'menuOrder',width:''},
-    {label:'可见',prop:'show',width:''},
+    {label:'可见',prop:'menuVisible',width:''},
     {label:'创建人',prop:'createUser',width:''},
     {label:'创建时间',prop:'createDate',width:''},
     {label:'修改人',prop:'updateUser',width:''},

@@ -18,7 +18,7 @@ function http(axiosConfig: AxiosRequestConfig<any>, customOptions: any, loadingO
 
     // 自定义配置
     let custom_options = Object.assign({
-        repeat_request_cancel: false, // 是否开启取消重复请求, 默认为 true
+        repeat_request_cancel: true, // 是否开启取消重复请求, 默认为 true
         loading: false, // 是否开启loading层效果, 默认为false
         reduct_data_format: true, // 是否开启简洁的数据结构响应, 默认为true
         error_message_show: true, // 是否开启接口错误信息展示,默认为true
@@ -142,7 +142,7 @@ function addPending(config: AxiosRequestConfig<any>) {
  * 删除重复的请求
  * @param {*} config 
  */
-function removePending(config) {
+function removePending(config: AxiosRequestConfig<any>) {
     const pendingKey = getPendingKey(config);
     if (pendingMap.has(pendingKey)) {
         const cancelToken = pendingMap.get(pendingKey);

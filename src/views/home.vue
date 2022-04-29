@@ -17,7 +17,7 @@
                 </span>
                 <template #dropdown>
                 <el-dropdown-menu>
-                    <el-dropdown-item><span>关闭全部</span></el-dropdown-item>
+                    <el-dropdown-item><span @click="loginOut">退出</span></el-dropdown-item>
                 </el-dropdown-menu>
                 </template>
             </el-dropdown>
@@ -71,6 +71,10 @@ interface Tree {
             })
         }
     })
+const loginOut = ()=>{
+
+    route.push('/login')
+}
 const navList = computed(()=>{ return $store.state.navicate });
 const tagArray = computed(()=>{ return $store.state.tags });
 const treeRef = ref<InstanceType<typeof ElTree>>()
@@ -270,6 +274,9 @@ const defaultProps = {
             font-weight:bold;
             font-size:16px;
             background:#5294D5;
+            .el-tree-node.is-current{
+                background:#1677FF;
+            }
             .el-tree-node__content{
                 height:50px;
                 margin-top:2px;

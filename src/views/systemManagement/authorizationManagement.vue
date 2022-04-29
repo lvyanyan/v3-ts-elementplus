@@ -31,14 +31,14 @@
             </template>
             <rz-form :config="userConfig" @submit="userSubmit" :data="userData"></rz-form>
             <rz-btns :config="userBtns" @addUser="addUser" @deleteUser="deleteUser"></rz-btns>
-            <rz-table ref="userTable" :config="userTableConfig" width="670px" index check data-url="/role/query/user" :data-params="{roleId:memberForm.roleId}"></rz-table>
+            <rz-table ref="userTable" :config="userTableConfig" width="670px" height="162px" index check data-url="/role/query/user" :data-params="{roleId:memberForm.roleId}"></rz-table>
         </el-card>
         </template>
     </rz-dialog>
     <rz-dialog :createVisible="addUserVisible" dialogTitle="添加系统中已有用户"  @onSubmit="addUserSubmit" @outForm="addUserOut" width="800px">
         <template #content>
             <rz-form :config="noneConfig" @submit="noneSubmit" :data="noneData"></rz-form>
-            <rz-table ref="noneTable" :config="noneTableConfig" width="670px" index check data-url="/role/list/notAssociateUser" :data-params="{roleId:memberForm.roleId}"></rz-table>
+            <rz-table ref="noneTable" :config="noneTableConfig" width="670px" height="362px" index check data-url="/role/list/notAssociateUser" :data-params="{roleId:memberForm.roleId}"></rz-table>
         </template>
     </rz-dialog>
     <rz-dialog :createVisible="permissionVisible" dialogTitle="权限分配"  @onSubmit="permissionSubmit" @outForm="permissionOut" width="800px">
@@ -48,7 +48,7 @@
                     <el-input v-model="permissionForm.roleNm" disabled placeholder="请输入角色名称"></el-input>
                 </el-form-item>
                 <el-form-item label="权限分配">
-                    <el-tree ref="menuTree" node-key="id" :props="{label:'menuNm'}" show-checkbox :data="menuData" default-expand-all></el-tree>
+                    <el-tree ref="menuTree" node-key="id" :props="{label:'menuNm'}" :default-checked-keys="checkedList" show-checkbox :data="menuData" default-expand-all></el-tree>
                 </el-form-item>
             </el-form>
         </template>
@@ -150,6 +150,7 @@ const permissionForm = reactive({
     userNo:'',
 })
 const permissionVisible = ref(false);
+const checkedList = ref([])
 const assignPermission = (row)=>{
     http({
         url:'/role/list/visibleMenu',
@@ -157,10 +158,15 @@ const assignPermission = (row)=>{
         data:{roleId:row.roleId}
     }).then(res=>{
         if(res.code==200){
-            permissionVisible.value = true;
             permissionForm.roleId = row.roleId;
             permissionForm.roleNm = row.roleNm;
-            menuData.value = res.data
+            menuData.value = res.data;
+            menuData.value.forEach(item=>{
+                if(item.ifAssigned==true){
+                    checkedList.value.push(item.id)
+                }
+            })
+            permissionVisible.value = true;
         }
     })
 }
@@ -388,6 +394,7 @@ const submit=(form)=>{
 :deep(.el-card){
     margin-bottom:20px;
     height:550px;
+    box-shadow:none;
 }
 :deep(.el-card__header){
     text-align:center;

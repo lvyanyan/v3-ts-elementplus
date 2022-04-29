@@ -12,6 +12,9 @@
     margin-right: 10px;
     cursor: pointer;
     display: inline-block;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
 }
 
 .rz-form .el-form-item {

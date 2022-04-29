@@ -10,7 +10,9 @@
         <div class="set-content">
             <span class="set-title">角色选择</span>
             <span class="set-box">
-            <span class="set-item" v-for="item in checkList">{{item.roleNm}}</span>
+            <el-scrollbar>
+            <el-tag class="set-item" v-for="item in checkList">{{item.roleNm}}</el-tag>
+            </el-scrollbar>
             </span>
         </div>        
         <div class="set-list">
@@ -340,7 +342,6 @@ const submit=(form)=>{
         width:411px;
         height:50px;
         border-radius: 3px;
-        overflow-x:scroll;
         border: 1px solid rgba(32, 53, 128, 0.16);
         .set-item{
            font-size:14px;

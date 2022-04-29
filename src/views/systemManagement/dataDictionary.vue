@@ -9,7 +9,7 @@
         </template>
         <rz-form :config="formConfig" @submit="submit" :data="searchData"></rz-form>
         <rz-btns :config="btnConfig" @createDic="createDic"  @editDic="editDic" @deleteDic="deleteDic"></rz-btns>
-        <rz-table ref="dicTable" :config="tableConfig" width="1567px" index check data-url="/dic/domain/list" @dicDomain="updateTable" >
+        <rz-table ref="dicTable" :config="tableConfig" width="1567px" height="460px" index check data-url="/dic/domain/list" @dicDomain="updateTable" >
         </rz-table>
     </el-card>
     <el-card class="right-card">
@@ -24,7 +24,7 @@
             </el-form-item>
         </el-form>
         <rz-btns :config="detailBtnConfig" @createDetail="createDetail" @editDetail="editDetail" @deleteDetails="deleteDetails"></rz-btns>
-        <rz-table ref="detailTable" :config="detailTableConfig" width="322px" index check data-url="/dic/detail/list">
+        <rz-table ref="detailTable" :config="detailTableConfig" width="322px" height="420px" index check data-url="/dic/detail/list">
         </rz-table>
     </el-card>
     <rz-dialog :createVisible="createDicVisible" :dialogTitle="dicTitle"  @onSubmit="dicSubmit" @outForm="dicOut" width="800px">
@@ -242,6 +242,7 @@ const detailRules = {
     dicValue:[{required:true,message:'编码不能为空',trigger:'blur'}],
 }
 const detailForm = reactive({data:{
+    dicDomain:'',
     dicKey:'',
     dicValue:''
 }})
@@ -307,7 +308,7 @@ const deleteDetails = ()=>{
 }
 const detailOut=(val)=>{
     resetObj(detailForm.data)
-    submit()
+    detailTable.value.onload({dicDomain:detail.data.dicDomain})
     createDetailVisible.value = false
 }
 const detailSubmit=(val)=>{
@@ -337,8 +338,9 @@ const submit=(form)=>{
 const detail = reactive({data:{}})
 const updateTable = (val)=>{
     detail.data = val
+    detailForm.data.dicDomain = val.dicDomain;
     // detail.name= val.dicDomainNm;
-    detailTable.value.onload({dicDomain:val.dicDomain})
+    detailTable.value.onload({dicDomain:detail.data.dicDomain})
 }
 onMounted(()=>{
 })

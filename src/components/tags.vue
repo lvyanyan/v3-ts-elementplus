@@ -39,6 +39,7 @@ const activeName = computed(()=>{ return $store.state.tagName });
 const editableTabs = computed(()=>{ return $store.state.tags });
 
 const tabClick=(pane: TabsPaneContext, ev: Event)=>{
+    $store.dispatch('setTagName',pane.paneName)
     route.push({path:pane.paneName})
     localStorage.setItem('active',pane.paneName)
 }
@@ -54,12 +55,14 @@ const closeAll = ()=>{
 const removeTab = (targetName: string) => {
   const tabs = editableTabs.value
   let active = activeName.value
+  console.log(active,targetName)
   if (active === targetName) {
     tabs.forEach((tab, index) => {
       if (tab.iconUrl === targetName) {
         const nextTab = tabs[index + 1]?tabs[index + 1]: tabs[index - 1]
         if (nextTab) {
           active = nextTab.iconUrl
+          route.push(active)
         }
       }
     })
@@ -72,12 +75,13 @@ const removeTab = (targetName: string) => {
 </script>
 <style lang="less" scoped>
 .tags{
+    height:32px;
     .turn-left,.turn-right,.other{
         position:absolute;
-        width:36px;
-        height:36px;
+        width:32px;
+        height:32px;
         cursor:pointer;
-        background:no-repeat center #fff;
+        background:no-repeat center #F2F5FA;
     }
     .turn-left{
         left:0;
@@ -91,7 +95,7 @@ const removeTab = (targetName: string) => {
         }
     }
     .turn-right{
-        right:40px;
+        right:32px;
         top:0;
         img{
             width:12px;
@@ -120,28 +124,36 @@ const removeTab = (targetName: string) => {
             }
         }
     }
-    padding-left:40px;
+    padding-left:32px;
     padding-right:80px;
     position:relative;
     .el-tabs--border-card {
         background:#F2F5FA;
         border:none;
-        height:40px;
+        height:32px;
         :deep(.el-tabs__header){
             border:none;
         }
         :deep(.el-tabs__item){
             background:#fff;
             color:#0061CC;
+            height:32px;
+            line-height:32px;
             font-weight:bold;
             font-size:16px;
         }
         :deep(.el-tabs__content){
             padding:0;
         }
+        :deep(.el-tabs__header .el-tabs__item.is-closable){
+            background:#F2F5FA;
+            color:#0061CC;
+            opacity:0.3;
+        }
         :deep(.el-tabs__header .el-tabs__item.is-active){
             background:#DEEBFB;
             color:#0061CC;
+            opacity:1;
         }
     }
     .demo-tabs .custom-tabs-label .el-icon {
