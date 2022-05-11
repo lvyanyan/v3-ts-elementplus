@@ -7,31 +7,55 @@
     </rz-table>
     <rz-dialog v-if="settingVisible" :createVisible="settingVisible" dialogTitle="角色配置"  @onSubmit="setSubmit" @outForm="setOutForm" width="800px">
     <template #content>
-        <div class="set-content">
-            <span class="set-title">角色选择</span>
-            <span class="set-box">
-            <el-scrollbar>
-            <el-tag class="set-item" v-for="item in checkList">{{item.roleNm}}</el-tag>
-            </el-scrollbar>
-            </span>
-        </div>        
-        <div class="set-list">
-            <el-scrollbar>
-            <el-checkbox :label="item.roleNm" v-for="item in roleList" @change="check(item,$event)"/>
-            </el-scrollbar>
-        </div>
+        <el-form class="set-form" :model="setForm">
+            <el-form-item label="角色选择">
+                <el-select v-model="setForm.roleIds" multiple clear>
+                    <el-option  v-for="item in roleList" :label="item.roleNm" :value="item.roleId"></el-option>
+                </el-select>
+            </el-form-item>
+        </el-form>
     </template>
     </rz-dialog>
-    <create-form :createVisible="createVisible" dialogTitle="新建用户" :data="createData" :createRules="createRules" :config="createConfig" @onSubmit="onSubmit" @outForm="outForm"></create-form>
+    <rz-dialog v-if="createVisible" :createVisible="createVisible" dialogTitle="新建用户"  @onSubmit="onSubmit" @outForm="outForm" width="800px">
+    <template #content>
+        <el-form :inline="true" class="rz-form" :model="createData" :rules="createRules" label-position="right" label-width="120px">
+            <el-form-item label="帐号" prop="userNo">
+                <el-input v-model="createData.userNo" placeholder="请输入帐号">
+                </el-input>
+            </el-form-item>
+            <el-form-item label="用户名" prop="userNm">
+                <el-input v-model="createData.userNm" placeholder="请输入用户名">
+                </el-input>
+            </el-form-item>
+            <el-form-item label="密码" prop="userPassword">
+                <el-input v-model="createData.userPassword" placeholder="请输入密码">
+                </el-input>
+            </el-form-item>
+            <el-form-item label="角色选择" prop="roleId">
+                <el-select v-model="createData.roleId"  placeholder="请选择角色">
+                        <el-option v-for="item in authorlist" :label="item.roleNm" :value="item.roleId"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="联系电话" prop="phone">
+                <el-input v-model="createData.phone" placeholder="请输入联系电话">
+                </el-input>
+            </el-form-item>
+            <el-form-item label="电子邮箱" prop="email">
+                <el-input v-model="createData.email" placeholder="请输入电子邮箱">
+                </el-input>
+            </el-form-item>
+        </el-form>
+    </template>
+    </rz-dialog>
 </div>
 </template>
 
 <script lang='ts' setup>
 import { ref, getCurrentInstance,reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus';
+import {resetObj} from '/src/utils/public'
 import store from '/src/store'
 import http from '/src/api/http'
-import createForm from '../../components/createForm.vue'
 import RzTable from '../../components/table.vue'
 import RzForm from '../../components/form.vue'
 import RzBtns from '../../components/buttons.vue'
@@ -48,7 +72,7 @@ const formConfig=[
 const btnConfig=[
     {text:'新建用户', class:'bg-blue',functionName:'createUser'},
     {text:'删除', class:'bg-red',functionName:'deleteItems'},
-    {text:'注销', class:'bg-green',functionName:'destroyUsers'},
+    {text:'注销/恢复', class:'bg-green',functionName:'destroyUsers'},
 ];
 const deleteItems = ()=>{
     const arr = userTable.value.selection;
@@ -85,20 +109,36 @@ const destroyUsers = ()=>{
     if(arr.length<1){
         return;
     }
-    let str = []
+    let str = [],status = arr[0].statusCode;
     arr.forEach(item=>{
-        str.push(item.userNo)
+        if(item.statusCode == status){
+            str.push(item.userNo)
+        }else{
+            status = false;
+        }
     })
+    if(status == false){
+            ElMessage({
+                type:'warning',
+                message:'不能同时操作不同状态的用户'
+            })
+            return;
+    }
     str = str.join(',')
+    if(status == '01'){
+        status = '02'
+    }else{
+        status = '01'
+    }
     http({
         url:'/user/cancel',
         method:'post',
-        data:{userNos:str}
+        data:{userNos:str,status}
     }).then(res=>{
         if(res.code=="200"){
             ElMessage({
                 type:'success',
-                message:'注销成功'
+                message:'操作成功'
             })
             submit()
         }else{
@@ -109,14 +149,14 @@ const destroyUsers = ()=>{
         }
     })
 }
-const createData = {
+const createData = reactive({
     userNo:'',
     userNm:'',
     phone:'',
     email:'',
     roleId:'',
     userPassword:''
-};
+});
 const searchData = {
     userNo:'',
     userNm:'',
@@ -130,19 +170,11 @@ const createRules = {
     userPassword:[{required:true,message:'密码不能为空',trigger:'blur'}],
 }
 
-const createConfig = [
-    {label:'账号', prop:'userNo',type:'input',width:'120px',valueWidth:'200px', placeholder:'请输入账号', required:true,},
-    {label:'用户名', prop:'userNm',type:'input',width:'120px',valueWidth:'200px', placeholder:'请输入用户名', required:true,},
-    {label:'密码', prop:'userPassword',type:'input',width:'120px',valueWidth:'200px', placeholder:'请输入密码', required:true,},
-    {label:'角色选择', prop:'roleId',type:'aothor-select',width:'120px',valueWidth:'200px', placeholder:'请选择角色', required:true,},
-    {label:'联系电话', prop:'phone',type:'input',width:'120px',valueWidth:'200px', placeholder:'请输入联系电话'},
-    {label:'电子邮箱', prop:'email',type:'input',width:'120px',valueWidth:'200px', placeholder:'请输入电子邮箱'},
-];
 const tableConfig=[
     {label:'用户账号',prop:'userNo',width:''},
     {label:'用户名',prop:'userNm',width:''},
     {label:'创建时间',prop:'createDate',width:''},
-    {label:'角色',prop:'role',width:''},
+    {label:'角色',prop:'roleNm',width:''},
     {label:'状态',prop:'status',width:''},
     {label:'联系电话',prop:'phone',width:''},
     {label:'邮箱',prop:'email',width:''},
@@ -154,15 +186,21 @@ const tableOperation=[
     {text:'个人设置', class:'rz-setting',functionName:'personSetting'},
 ]
 const destroyUser=(row)=>{
+    let statusCode = '01'
+    if(row.statusCode == '01'){
+        statusCode = '02'
+    }else{
+        statusCode = '01'
+    }
     http({
         url:'/user/cancel',
         method:'post',
-        data:{userNos:row.userNo}
+        data:{userNos:row.userNo,status:statusCode}
     }).then(res=>{
         if(res.code=="200"){
             ElMessage({
                 type:'success',
-                message:'注销成功'
+                message:'操作成功'
             })
             submit()
         }else{
@@ -202,7 +240,7 @@ const resetPwd = (row)=>{
         if(res.code=="200"){
             ElMessage({
                 type:'success',
-                message:'重置密码成功'
+                message:'重置成功，密码为Ccb123456'
             })
             submit()
         }else{
@@ -214,33 +252,28 @@ const resetPwd = (row)=>{
     })
 }
 let settingVisible = ref(false);
-const check=(obj,val)=>{
-    if(val){
-        checkList.value.push(obj)
-    }else{
-        let index = checkList.value.findIndex(item=>{
-            return item==obj
-        })
-        checkList.value.splice(index,1)
-    }
-}
-const checkList = ref([]);
 const personSetting = (row)=>{
-    settingVisible.value = true;
-    setForm.userNo = row.userNo
+    http({
+        url:'/user/get/role',
+        method:'post',
+        data:{userNo:row.userNo}
+    }).then(res=>{
+        if(res.code==200){
+            setForm.roleIds = []
+            res.data.forEach(item=>{
+                setForm.roleIds.push(item.roleId)
+            })
+            settingVisible.value = true;
+            setForm.userNo = row.userNo
+        }
+    })
 }
 const setForm = reactive({
     roleIds:'',
     userNo:''
 })
 const setSubmit = ()=>{
-    let arr = checkList.value;
-    let str = []
-    arr.forEach(item=>{
-        str.push(item.roleId)
-    })
-    str = str.join(',')
-    setForm.roleIds = str;
+    setForm.roleIds = setForm.roleIds.join(',')
     http({
         url:'/user/assign/role',
         method:'post',
@@ -262,26 +295,46 @@ const setSubmit = ()=>{
     })
 }
 const setOutForm = ()=>{
-    checkList.value=[];
+    resetObj(setForm)
     settingVisible.value = false;
 }
 const roleList = computed(()=>{ return store.state.roles });
 const userTable = ref()
 const refs = getCurrentInstance();
+const authorlist = ref([])
 const createUser = ()=>{
-    createVisible.value = true
+    http({
+        url:'/role/list/all',
+        method:'post'
+    }).then(res=>{
+        authorlist.value = res.data
+        createVisible.value = true
+    })
 }
-const outForm=(val)=>{
-    createVisible.value = val
+const outForm=()=>{
+    resetObj(createData)
+    createVisible.value = false
+    submit();
 }
-const onSubmit=(val)=>{
+const onSubmit=()=>{
     http({
         url:'/user/create',
         method:'post',
-        data:val
+        data:createData
     }).then(res=>{
-        createVisible.value = false;
-        submit()
+        if(res.code=="200"){
+            ElMessage({
+                type:'success',
+                message:'新建成功'
+            })
+        outForm();
+        }else{
+            ElMessage({
+                type:'error',
+                message:res.msg
+            })
+        }
+
     })
 }
 const submit=(form)=>{
@@ -299,57 +352,19 @@ const submit=(form)=>{
 :deep(.dialog-footer){
     margin-top:20px;
 }
-:deep(.el-dialog .set-title){
-        font-size:18px;
-        float:left;
-        width:72px;
-        line-height:50px;
-        margin-right:15px;
+:deep(.set-form){
+    margin-left:126px;
+    .el-form-item__label{
         color:#000;
-}
-:deep(.el-dialog .set-content){
-        height:50px;
-        width:500px;
-        margin:0 150px;
-}
-:deep(.el-dialog .set-list){
-        height:122px;
-        width:411px;
-        margin-top:10px;
-        margin-left:237px;
-        border-radius: 3px;
-        border: 1px solid rgba(32, 53, 128, 0.16);
-        .el-checkbox{
-            display:block;
-            padding-left:28px;
-            height:50px;
-            line-height:50px;
-            font-size:14px;
-        }
-        .el-checkbox__input.is-checked .el-checkbox__inner{
-            background:rgba(32, 53, 128, 0.2);
-            border-color:rgba(32, 53, 128, 0.2);
-        }
-        .el-checkbox__input.is-focus .el-checkbox__inner{
-            border-color:rgba(32, 53, 128, 0.2);
-        }
-        .el-checkbox__input.is-checked + .el-checkbox__label{
-            color:#191919;
-        }
-}
-:deep(.el-dialog .set-box){
-        float:left;
+        font-size:18px;
+        line-height:50px;
+    }
+    .el-select{
         width:411px;
         height:50px;
-        border-radius: 3px;
-        border: 1px solid rgba(32, 53, 128, 0.16);
-        .set-item{
-           font-size:14px;
-           float:left;
-           color:#191919;
-           width:69px;
-           text-align:center;
-           line-height:50px;
+        .el-input__inner{
+            height:50px !important;
         }
+    }
 }
 </style>

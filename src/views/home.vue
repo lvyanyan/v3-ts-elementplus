@@ -9,7 +9,7 @@
     </div>
     <div class="right-box">
         <div class="user-logo"></div>
-        <div class="user-name">管理员001</div>
+        <div class="user-name">{{userInfo.userNm}}</div>
         <div class="put-down">
             <el-dropdown>
                 <span class="el-dropdown-link">
@@ -26,7 +26,7 @@
 </div>
 <div class="content">
     <div class="nav">
-        <el-tree :data="data" node-key="id" :props="defaultProps" @node-click="handleNodeClick" />
+        <el-tree ref="navTree" :data="navList" node-key="iconUrl" :props="defaultProps" @node-click="handleNodeClick" />
     </div>
     <div class="main">
         <tags ></tags>
@@ -42,46 +42,50 @@ import { ElMessage } from 'element-plus';
 import http from '/src/api/http'
 import $store from "../store/index";
 import tags from '../components/tags.vue'
-import type { ElTree } from 'element-plus'
+// import type { ElTree } from 'element-plus'
 const route = useRouter();
 const ci = getCurrentInstance()
-interface Tree {
-  label: string
-  id: string
-  children?: Tree[]
-}
+// interface Tree {
+//   label: string
+//   id: string
+//   children?: Tree[]
+// }
     onMounted( async ()=>{
         let tags = JSON.parse(localStorage.getItem('tags'))
         let active = localStorage.getItem('active')
-        let userInfo = localStorage.getItem('userInfo')
+        // let userInfo = localStorage.getItem('userInfo')
         let nav = localStorage.getItem('nav')
         if(!userInfo){
             route.push('/login')
         }else{
-            await $store.dispatch('setInfo',userInfo)
+            await $store.dispatch('setInfo',JSON.stringify(userInfo))
             await $store.dispatch('setTags',tags?tags:[{title:'主页',iconUrl:'/'}]);// 修改
             await $store.dispatch('setTagName',active?active:'/');// 修改
-            await $store.dispatch('setNavicate',nav);
+            await $store.dispatch('setNavicate',nav?nav:JSON.stringify([]));
             route.push({path:$store.state.tagName})
-            await http({
-                url:'/role/list/all',
-                method:'post'
-            }).then(res=>{
-                $store.dispatch('setRoles',res.data)
-            })
         }
     })
 const loginOut = ()=>{
-
+            let info = {
+                userNo:'',
+                userNm:'',
+                userLoginNm:''
+            }
+    localStorage.setItem('active','/')
+    localStorage.setItem('tags',JSON.stringify([{title:'主页',iconUrl:'/'}]))
+    localStorage.setItem('userInfo',JSON.stringify(info))
+    $store.dispatch('setInfo',JSON.stringify(info))
     route.push('/login')
 }
-const navList = computed(()=>{ return $store.state.navicate });
+const navList = computed(()=>{ return JSON.parse($store.state.navicate) });
 const tagArray = computed(()=>{ return $store.state.tags });
-const treeRef = ref<InstanceType<typeof ElTree>>()
-const handleNodeClick = (data: Tree) => {
+// const treeRef = ref<InstanceType<typeof ElTree>>()
+const handleNodeClick = (data) => {
+  if(data.menuType!="页面"){return}
   if(data.iconUrl){
       route.push({path:data.iconUrl})
       let tags = tagArray.value
+      $store.dispatch('setBtns',data.buttonChildren)
       $store.dispatch('setTagName',data.iconUrl)
       let next = tagArray.value.findIndex(item=>{
           return data.iconUrl == item.iconUrl
@@ -95,6 +99,14 @@ const handleNodeClick = (data: Tree) => {
         localStorage.setItem('tags',JSON.stringify(tags))
   }
 }
+const activeName = computed(()=>{ return $store.state.tagName });
+const navTree = ref();
+watch(activeName,(n,o)=>{
+    navTree.value.setCurrentKey(n);
+    let node = navTree.value.getNode(n);
+    $store.dispatch('setBtns',node.data.buttonChildren)
+})
+const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 const toHome = ()=>{
     route.push('/')
       let next = tagArray.value.findIndex(item=>{
@@ -108,7 +120,7 @@ const toHome = ()=>{
         $store.dispatch('setTags',tagArray)
 }
 
-const data: Tree[] = [
+const data = [
   {
       id: '0',
     menuNm: '主页',
@@ -145,7 +157,7 @@ const data: Tree[] = [
         },
         {
             id: '5-2',
-            menuNm: '权限管理',
+            menuNm: '角色管理',
             iconUrl:'/systemManagement/authorizationManagement'
         },
         {

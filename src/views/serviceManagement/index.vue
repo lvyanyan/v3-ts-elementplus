@@ -11,12 +11,12 @@
             <el-row>
                 <el-col :span="12">
                     <el-form-item label="服务名称">
-                        <el-input v-model="serviceForm.serviceNm"></el-input>
+                        <el-input v-model="serviceForm.serviceNm" placeholder="请输入服务名称"></el-input>
                     </el-form-item>
                 </el-col>
                 <el-col :span="12">
                     <el-form-item label="创建人">
-                        <el-input v-model="serviceForm.createUser"></el-input>
+                        <el-input v-model="serviceForm.createUser" placeholder="请输入创建人"></el-input>
                     </el-form-item>
                 </el-col>
             </el-row>
@@ -28,7 +28,7 @@
                 </el-col> -->
                 <el-col :span="12">
                     <el-form-item label="服务端口">
-                        <el-input v-model="serviceForm.servicePort"></el-input>
+                        <el-input v-model="serviceForm.servicePort" :disabled="serviceTitle=='修改服务'" placeholder="请输入服务端口"></el-input>
                     </el-form-item>
                 </el-col>
             </el-row>
@@ -38,14 +38,14 @@
     <rz-dialog v-if="updateVisible" :createVisible="updateVisible" :dialogTitle="versionTitle"  @onSubmit="updateSubmit" @outForm="updateOut" width="600px">
     <template #content>
         <el-form :model="versionForm" label-width="100px" label-position="right">
-            <!-- <el-form-item label="添加版本级别">
-                <el-input v-model='versionForm.level'></el-input>
-            </el-form-item> -->
+            <el-form-item label="添加版本级别">
+                <el-select v-model='versionForm.versionLevel' :disabled="versionTitle=='修改版本'"></el-select>
+            </el-form-item>
             <el-form-item label="是否强制发布">
                 <rz-select v-model='versionForm.ifImposed' domain="AW012"></rz-select>
             </el-form-item>
             <el-form-item label="服务版本">
-                <el-input v-model='versionForm.versionNumber'></el-input>
+                <el-input v-model='versionForm.versionNumber' disabled></el-input>
             </el-form-item>
             <el-form-item label="创建人">
                 <el-input v-model='versionForm.createUser'></el-input>
@@ -77,7 +77,7 @@
 
 <script lang='ts' setup>
 import { ref, getCurrentInstance,reactive, computed } from 'vue'
-import { ElMessage } from 'element-plus';   
+import { ElMessage,ElMessageBox } from 'element-plus';   
 import {resetObj} from '/src/utils/public'
 import store from '/src/store'
 import http from '/src/api/http'
@@ -90,7 +90,6 @@ import RzUpload from '../../components/upload.vue'
 
 let createVisible = ref(false)
 let updateVisible = ref(false)
-let uploadVisible = ref(false)
 const formConfig=[
     {label:'服务名称:',prop:'serviceNm',type:'input',width:'80px',valueWidth:'160px', placeholder:'请输入'},
     {label:'服务标识:',prop:'serviceId',type:'input',width:'80px',valueWidth:'160px', placeholder:'请输入'},
@@ -171,6 +170,7 @@ const versionForm = reactive({
     versionNumber:'',
     createUser:userInfo.userNm,
     ifImposed:'',
+    versionLevel:'',
     versionDescription:'',
     serviceId:''
 })
@@ -224,7 +224,6 @@ const updateSubmit = ()=>{
 const updateOut = ()=>{
     resetObj(versionForm);
     updateVisible.value = false;
-    uploadVisible.value = true;
     submit();
 }
 const deleteService = ()=>{
@@ -237,6 +236,15 @@ const deleteService = ()=>{
         str.push(item.serviceId)
     })
     str = str.join(',')
+    ElMessageBox.confirm(
+    '此删除会连同版本一起删除，确认删除?',
+    'Warning',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(()=>{
     http({
         url:'/service/delete',
         method:'post',
@@ -256,6 +264,10 @@ const deleteService = ()=>{
         }
         
     })
+  }).catch(()=>{
+
+  })
+
 }
 const searchData = {
     serviceId:'',
@@ -265,7 +277,7 @@ const searchData = {
 const expandOperation=[
     {text:'发布', class:'rz-public',functionName:'publicVersion'},
     {text:'修改', class:'rz-edit',functionName:'updateVersion'},
-    {text:'撤回', class:'rz-permission',functionName:'recallVersion'},
+    {text:'撤回', class:'rz-recall',functionName:'recallVersion'},
     {text:'删除', class:'rz-delete',functionName:'deleteVersion'},
 ]
 const publicVersion = (row)=>{
@@ -346,6 +358,7 @@ const expandConfig = [
     {label:'发布时间',prop:'releaseDate',width:'200px'},
     {label:'数据包大小',prop:'fileSize',width:'99px'},
     {label:'版本状态',prop:'versionStatusNm',width:'129px'},
+    {label:'是否强制发布',prop:'ifImposeNm',width:'129px'},
     {label:'类别',prop:'versionCategoryNm',width:'120px'},
     {label:'创建人',prop:'createUser',width:'84px'},
     {label:'描述',prop:'versionDescription',width:'245px',ellipsis:true,tooltip:true},

@@ -2,11 +2,34 @@
   <el-table :data="tableData" :highlight-current-row="highlight" :border="border" :row-key="expand?'id':''" style="width" :height="height"  :row-class-name="tableRowClassName" @row-click="changeDic" :header-row-class-name="headerStyle" @selection-change="getSelection">
     <el-table-column v-if="check" type="selection" width="55" />
     <el-table-column v-if="index" type="index" label="序号" width="55" />
-    <el-table-column type="expand" v-if="expand">
+    <el-table-column type="expand">
       <template #default="props">
-        <el-table :data="props.row.children" :header-row-class-name="headerStyle" >
-            <el-table-column v-if="expandIndex" type="index" label="序号" width="72" />
-            <el-table-column v-for="item in expandConfig" :prop="item.prop" :label="item.label" :width="item.width" >
+        <el-table :data="props.row.children" :header-row-class-name="headerStyle" @selection-change="getSelection">
+            <el-table-column v-if="check" type="selection" width="55" />
+            <el-table-column type="index" label="序号" width="55" />
+                <el-table-column type="expand">
+                <template #default="props">
+                    <el-table :data="props.row.children" :header-row-class-name="headerStyle" @selection-change="getSelection" >
+                        <el-table-column v-if="check" type="selection" width="55" />
+                        <el-table-column type="index" label="序号" width="55" />
+                        <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="item.width" >
+                            <template #default="scope" v-if="item.ellipsis">
+                                <div :class="scope.row.ellipsis=='true'?'ellipsis-cell':''"><el-icon v-if="scope.row.ellipsis=='true'" style="cursor:pointer" @click.stop="hidden(scope.row)"><arrow-right /></el-icon><el-icon style="cursor:pointer" v-else @click.stop="hidden(scope.row)"><arrow-down /></el-icon><span>{{scope.row[item.prop]}}</span></div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="操作" v-if="expandOperate" width="137">
+                            <template #default="scope">
+                                <div>
+                                    <el-tooltip :content="item.text" placement="top" v-for="item in expandOperation">
+                                    <i :class="`rz-icon ${item.class}`" @click.stop="emit(item.functionName,scope.row)"></i>
+                                    </el-tooltip>
+                                </div>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </template>
+                </el-table-column>
+            <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="item.width" >
                 <template #default="scope" v-if="item.ellipsis">
                     <div :class="scope.row.ellipsis=='true'?'ellipsis-cell':''"><el-icon v-if="scope.row.ellipsis=='true'" style="cursor:pointer" @click.stop="hidden(scope.row)"><arrow-right /></el-icon><el-icon style="cursor:pointer" v-else @click.stop="hidden(scope.row)"><arrow-down /></el-icon><span>{{scope.row[item.prop]}}</span></div>
                 </template>
@@ -23,12 +46,9 @@
         </el-table>
       </template>
     </el-table-column>
-    <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="item.width" :show-overflow-tooltip="item.tooltip">
+    <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="item.width" :show-overflow-tooltip="item.ellipsis">
           <template #default="scope" v-if="item.edit">
             <span class="edit-cell" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
-          </template>
-          <template #default="scope" v-if="item.ellipsis">
-                <div :class="scope.row.ellipsis=='true'?'ellipsis-cell':''"><el-icon v-if="scope.row.ellipsis=='true'" style="cursor:pointer" @click.stop="hidden(scope.row)"><arrow-right /></el-icon><el-icon style="cursor:pointer" v-else @click.stop="hidden(scope.row)"><arrow-down /></el-icon><span>{{scope.row[item.prop]}}</span></div>
           </template>
     </el-table-column>
     <el-table-column label="操作" v-if="operate">
@@ -105,17 +125,25 @@ const endPage = ref(0)
 const total = ref(0)
 const dicDomain = ref('')
 const selection = ref([])
+const selection1 = ref([])
+const selection2 = ref([])
 const getSelection = (val)=>{
     selection.value = val
+}
+const getSelection1 = (val)=>{
+    selection1.value = val
+}
+const getSelection2 = (val)=>{
+    selection2.value = val
 }
 const changeDic = (row,col)=>{
     if(props.dataUrl!='/dic/domain/list'){
         
     }else{
-        // if(col.property!='dicDomain'){
+        if(col.property!='dicDomain'){
             dicDomain.value = row
             emit("dicDomain",row)
-        // }
+        }
     }
 }
 const hidden = (row)=>{
@@ -143,44 +171,26 @@ const onload=(param)=>{
         [props.dataMethod=='post'?'data':'params']:params
     }).then((res: { data: any }) => {
           if(res.code=='200'){
-            tableData.value = props.nopage?res.data:res.data.records;
-            if(!props.nopage){
-                currentPage.value = res.data.current?res.data.current:1;
-                endPage.value = res.data.pages?res.data.pages:1;
-                total.value = res.data.total?res.data.total:0;
-            }
-            if(props.dataUrl == '/dic/domain/list'){
-                emit("dicDomain",res.data.records[0])
-            }
-            if(props.dataUrl == '/service/list'){
-                for(let i=0;i<tableData.value.length;i++){
-                    tableData.value[i].id = i;
-                    if(tableData.value[i].children){
-                        for(let z=0;z<tableData.value[i].children.length;z++){
-                            tableData.value[i].children[z].ellipsis = tableData.value[i].children[z].hidden
-                        }
-                    }
-                }
-            }
+            tableData.value = res.data.children;
           }
     })
 }
-const turnPage=(page)=>{
-    currentPage.value = page;
-    onload();
-}
-const pagePre = ()=>{
-    currentPage.value = currentPage.value - 1;
-    onload();
-}
-const pageNext = ()=>{
-    currentPage.value = currentPage.value + 1;
-    onload();
-}
-const sizeChange= (val)=>{
-    pageSize.value = val
-    onload();
-}
+// const turnPage=(page)=>{
+//     currentPage.value = page;
+//     onload();
+// }
+// const pagePre = ()=>{
+//     currentPage.value = currentPage.value - 1;
+//     onload();
+// }
+// const pageNext = ()=>{
+//     currentPage.value = currentPage.value + 1;
+//     onload();
+// }
+// const sizeChange= (val)=>{
+//     pageSize.value = val
+//     onload();
+// }
 onMounted(()=>{
     onload();
 })
@@ -202,7 +212,7 @@ const tableRowClassName = ({
 const headerStyle = ()=>{
     return 'header-row';
 }
-defineExpose({onload,selection})
+defineExpose({onload,selection,selection1,selection2})
 </script>
 <style lang="less" scoped>
 .el-table{
@@ -226,7 +236,7 @@ defineExpose({onload,selection})
         background:#FAFAFA;
     }
     :deep(.el-table__expanded-cell){
-        padding-left:178px;
+        // padding-left:178px;
     }
     :deep(.cell){
         text-align:center;

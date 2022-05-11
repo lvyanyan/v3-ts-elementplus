@@ -16,7 +16,7 @@
                 <el-input class="user-login" placeholder="用户名" v-model="loginForm.userLoginNm"></el-input>
             </el-form-item>
             <el-form-item >
-                <el-input class="user-pwd" placeholder="密码" type="password" v-model="loginForm.userPassword"></el-input>
+                <el-input class="user-pwd" placeholder="密码" type="password" v-model="loginForm.userPassword" @keyup.enter="submit"></el-input>
             </el-form-item>
         </el-form>
     </div>
@@ -63,6 +63,7 @@ const submit = ()=>{
                 if(res.code=200){
                     store.dispatch('setNavicate',res.data.children)
                     localStorage.setItem('nav',JSON.stringify(res.data.children))
+                    route.push({path:'/'})
                 }else{
                     ElMessage({
                         type:'error',
@@ -70,7 +71,8 @@ const submit = ()=>{
                     })
                 }
             })
-            route.push({path:'/'})
+            
+
         }else{
             ElMessage({
                 type:'error',

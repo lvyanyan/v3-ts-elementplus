@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { ElLoading, ElMessage, LoadingOptionsResolved } from 'element-plus';
 import { getTokenAUTH } from '@/utils/auth';
 import store from '/src/store'
+import { urlencoded } from 'body-parser';
 
 const pendingMap = new Map();
 
@@ -41,7 +42,13 @@ function http(axiosConfig: AxiosRequestConfig<any>, customOptions: any, loadingO
             // if (getTokenAUTH() && typeof window !== "undefined") {
             //     config.headers.Authorization = getTokenAUTH();
             // }
-            config.headers['userInfo'] = store.state.userInfo
+            const info = JSON.parse(store.state.userInfo)
+            const userInfo = {
+                userNm: encodeURIComponent(info.userNm),
+                userLoginNm: info.userLoginNm,
+                userNo: info.userNo
+            }
+            config.headers['userInfo'] = JSON.stringify(userInfo)
             return config;
         },
         error => {

@@ -9,7 +9,7 @@
         </template>
         <rz-form :config="formConfig" @submit="submit" :data="searchData"></rz-form>
         <rz-btns :config="btnConfig" @createDic="createDic"  @editDic="editDic" @deleteDic="deleteDic"></rz-btns>
-        <rz-table ref="dicTable" :config="tableConfig" width="1567px" height="460px" index check data-url="/dic/domain/list" @dicDomain="updateTable" >
+        <rz-table ref="dicTable" highlight :config="tableConfig" width="1567px" height="460px" index check data-url="/dic/domain/list" @dicDomain="updateTable" >
         </rz-table>
     </el-card>
     <el-card class="right-card">
@@ -18,13 +18,13 @@
                 <span>字典类别</span>
             </div>
         </template>
-        <el-form :model="detail.data">
+        <el-form :model="detail">
             <el-form-item label="域名称">
-                <el-input disabled v-model="detail.data.dicDomainNm"></el-input>
+                <el-input disabled v-model="detail.dicDomainNm"></el-input>
             </el-form-item>
         </el-form>
         <rz-btns :config="detailBtnConfig" @createDetail="createDetail" @editDetail="editDetail" @deleteDetails="deleteDetails"></rz-btns>
-        <rz-table ref="detailTable" :config="detailTableConfig" width="322px" height="420px" index check data-url="/dic/detail/list">
+        <rz-table ref="detailTable" nopage :config="detailTableConfig" width="322px" height="420px" index check data-url="/dic/detail/list">
         </rz-table>
     </el-card>
     <rz-dialog :createVisible="createDicVisible" :dialogTitle="dicTitle"  @onSubmit="dicSubmit" @outForm="dicOut" width="800px">
@@ -54,16 +54,16 @@
     </rz-dialog>
     <rz-dialog :createVisible="createDetailVisible" :dialogTitle="detailTitle"  @onSubmit="detailSubmit" @outForm="detailOut" width="800px">
         <template #content>
-            <el-form :model="detailForm.data" inline :rules="detailRules">
+            <el-form :model="detailForm" inline :rules="detailRules">
                 <el-row>
                     <el-col :span="12">
-                        <el-form-item label="类别名称" prop="dicKey">
-                            <el-input v-model="detailForm.data.dicKey"></el-input>
+                        <el-form-item label="类别编码" prop="dicKey">
+                            <el-input v-model="detailForm.dicKey"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="类别编码" prop="dicValue">
-                            <el-input v-model="detailForm.data.dicValue"></el-input>
+                        <el-form-item label="类别名称" prop="dicValue">
+                            <el-input v-model="detailForm.dicValue"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -119,8 +119,8 @@ const tableConfig=[
     {label:'修改时间',prop:'updateDate',width:''},
 ]
 const detailTableConfig=[
-    {label:'类型名称',prop:'dicValue',width:''},
     {label:'类型编码',prop:'dicKey',width:''},
+    {label:'类型名称',prop:'dicValue',width:''},
 ]
 const dicTable = ref()
 const detailTable = ref()
@@ -187,7 +187,7 @@ const deleteDic = ()=>{
         if(res.code=="200"){
             ElMessage({
                 type:'success',
-                message:'删除成功'
+                message:res.msg
             })
             submit()
         }else{
@@ -218,6 +218,7 @@ const dicOut=(val)=>{
 }
 const dicSubmit=(val)=>{
     let url = dicTitle.value == '编辑字典分类'?'/dic/domain/update':'/dic/domain/add';
+    let msg = dicTitle.value == '编辑字典分类'?'编辑成功':'新建成功';
     http({
         url,
         method:'post',
@@ -226,7 +227,7 @@ const dicSubmit=(val)=>{
         if(res.code=="200"){
             ElMessage({
                 type:'success',
-                message:'新建成功'
+                message:res.msg
             })
             dicOut()
         }else{
@@ -241,17 +242,17 @@ const detailRules = {
     dicKey:[{required:true,message:'名称不能为空',trigger:'blur'}],
     dicValue:[{required:true,message:'编码不能为空',trigger:'blur'}],
 }
-const detailForm = reactive({data:{
+const detailForm = reactive({
     dicDomain:'',
     dicKey:'',
     dicValue:''
-}})
+})
 const createDetail = ()=>{
     detailTitle.value = '新建字典类别'
     createDetailVisible.value = true
 }
 const editDetail = ()=>{
-    let row = detailTable.value.selection;
+    let row = detailTable.value.selection[0];
     if(row.length>1){
         ElMessage({
             type:'warning',
@@ -266,7 +267,9 @@ const editDetail = ()=>{
         })
         return;
     }
-    detailForm.data = row[0];
+    detailForm.id = row.id;
+    detailForm.dicKey = row.dicKey;
+    detailForm.dicValue = row.dicValue;
     detailTitle.value = '编辑字典类别'
     createDetailVisible.value = true
 }
@@ -295,7 +298,7 @@ const deleteDetails = ()=>{
         if(res.code=="200"){
             ElMessage({
                 type:'success',
-                message:'删除成功'
+                message:res.msg
             })
             submit()
         }else{
@@ -307,21 +310,23 @@ const deleteDetails = ()=>{
     })
 }
 const detailOut=(val)=>{
-    resetObj(detailForm.data)
-    detailTable.value.onload({dicDomain:detail.data.dicDomain})
+    resetObj(detailForm)
+    detailForm.dicDomain = detail.dicDomain;
+    detailTable.value.onload({dicDomain:detail.dicDomain})
     createDetailVisible.value = false
 }
 const detailSubmit=(val)=>{
     let url = detailTitle.value == '编辑字典类别'?'/dic/detail/update':'/dic/detail/add';
+    let msg = dicTitle.value == '编辑字典分类'?'编辑成功':'新建成功';
     http({
         url,
         method:'post',
-        data:detailForm.data
+        data:detailForm
     }).then(res=>{
         if(res.code=="200"){
             ElMessage({
                 type:'success',
-                message:'新建成功'
+                message:res.msg
             })
             detailOut()
         }else{
@@ -335,12 +340,12 @@ const detailSubmit=(val)=>{
 const submit=(form)=>{
     dicTable.value.onload(form)
 }
-const detail = reactive({data:{}})
+const detail = reactive({dicDomain:'',dicDomainNm:''})
 const updateTable = (val)=>{
-    detail.data = val
-    detailForm.data.dicDomain = val.dicDomain;
-    // detail.name= val.dicDomainNm;
-    detailTable.value.onload({dicDomain:detail.data.dicDomain})
+    detail.dicDomain = val.dicDomain
+    detailForm.dicDomain = val.dicDomain;
+    detail.dicDomainNm= val.dicDomainNm;
+    detailTable.value.onload({dicDomain:detail.dicDomain})
 }
 onMounted(()=>{
 })

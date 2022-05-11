@@ -50,7 +50,7 @@ const tableConfig=[
     {label:'访问url',prop:'url',width:''},
     // {label:'mac地址',prop:'',width:''},
     {label:'耗时',prop:'costTime',width:''},
-    {label:'参数',prop:'args',width:''},
+    // {label:'参数',prop:'args',width:''},
     {label:'状态',prop:'requestResultNm',width:''},
 ]
 const logTable = ref()

@@ -5,8 +5,9 @@ export default createStore({
     state: {
         tags: Array,//标签
         tagName: String,//当前标签
-        navicate: Array,//导航
+        navicate: JSON.stringify([]),//导航
         roles: [],//角色列表
+        btns: null,
         userInfo: JSON.stringify({
             userNo: '123456',
             userNm: 'admin',
@@ -19,6 +20,9 @@ export default createStore({
         },
         saveTagName(state, val) {
             state.tagName = val
+        },
+        saveBtns(state, val) {
+            state.btns = val
         },
         saveInfo(state, val) {
             state.userInfo = val
@@ -36,6 +40,9 @@ export default createStore({
         },
         setInfo(context, value) {
             context.commit('saveInfo', value)
+        },
+        setBtns(context, value) {
+            context.commit('saveBtns', value)
         },
         setRoles(context, value) {
             context.commit('saveRoles', value)

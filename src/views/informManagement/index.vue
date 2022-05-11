@@ -7,15 +7,15 @@
     </rz-table>
     <rz-dialog v-if="noticeVisible" :createVisible="noticeVisible" :dialogTitle="formTitle"  @onSubmit="noticeSubmit" @outForm="noticeOut" width="800px">
         <template #content>
-            <el-form :model="noticeForm" inline>
+            <el-form :model="noticeForm" inline :rules="noticeRules">
                 <el-row>
                 <el-col :span="12">
                 <el-form-item label="消息名称" prop="noticeNm">
-                    <el-input v-model="noticeForm.noticeNm"></el-input>
+                    <el-input v-model="noticeForm.noticeNm" maxlength="100" show-word-limit></el-input>
                 </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                <el-form-item label="紧急程度">
+                <el-form-item label="紧急程度" prop="urgencyDegree">
                     <rz-select v-model="noticeForm.urgencyDegree" domain="AW005"></rz-select>
                 </el-form-item>
                 <!-- <el-form-item label="目标对象">
@@ -25,13 +25,13 @@
                 </el-row>
                 <el-row>
                 <el-col :span="12">
-                <el-form-item label="消息类型">
+                <el-form-item label="消息类型" prop="noticeType">
                     <rz-select v-model="noticeForm.noticeType" domain="AW004"></rz-select>
                 </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                <el-form-item label="消息内容">
-                    <el-input type="textarea" v-model="noticeForm.noticeDetail"></el-input>
+                <el-form-item label="消息内容" prop="noticeDetail">
+                    <el-input type="textarea" v-model="noticeForm.noticeDetail" maxlength="1000" show-word-limit></el-input>
                 </el-form-item>
                 <!-- <el-form-item label="紧急程度">
                     <rz-select v-model="noticeForm.urgencyDegree" domain="AW005"></rz-select>
@@ -238,6 +238,12 @@ const deleteItems = ()=>{
         
     })
 }
+const noticeRules = {
+    noticeNm:[{required:true,message:'通知名称不能为空',trigger:'blur'}],
+    noticeDetail:[{required:true,message:'通知内容不能为空',trigger:'blur'}],
+    urgencyDegree:[{required:true,message:'紧急程度不能为空',trigger:'blur'}],
+    noticeType:[{required:true,message:'通知类型不能为空',trigger:'blur'}],
+}
 const noticeForm = reactive({
     noticeNm:'',
     noticeDetail:'',
@@ -248,8 +254,8 @@ const noticeForm = reactive({
 });
 const tableConfig=[
     // {label:'消息编号',prop:'noticeNo',width:''},
-    {label:'通知名称',prop:'noticeNm',width:'',edit:true},
-    {label:'通知内容',prop:'noticeDetail',width:''},
+    {label:'通知名称',prop:'noticeNm',width:'',edit:true,ellipsis:true,},
+    {label:'通知内容',prop:'noticeDetail',width:'',ellipsis:true,},
     {label:'通知类型',prop:'noticeTypeNm',width:''},
     {label:'紧急程度',prop:'urgencyDegreeNm',width:''},
     {label:'目标',prop:'targetValue',width:''},

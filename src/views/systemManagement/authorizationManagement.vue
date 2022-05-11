@@ -16,7 +16,7 @@
         </el-form>
         </template>
     </rz-dialog>
-    <rz-dialog :createVisible="memberVisible" dialogTitle="成员管理"  @onSubmit="memberSubmit" @outForm="memberOut" width="800px">
+    <rz-dialog :createVisible="memberVisible" dialogTitle="成员管理" :sub="false"  @outForm="memberOut" width="800px">
         <template #content>
         <el-form class="rz-form" :model="memberForm"  label-width="120px" label-position="right">
             <el-form-item label="角色名称:">
@@ -160,7 +160,7 @@ const assignPermission = (row)=>{
         if(res.code==200){
             permissionForm.roleId = row.roleId;
             permissionForm.roleNm = row.roleNm;
-            menuData.value = res.data;
+            menuData.value = [res.data];
             menuData.value.forEach(item=>{
                 if(item.ifAssigned==true){
                     checkedList.value.push(item.id)

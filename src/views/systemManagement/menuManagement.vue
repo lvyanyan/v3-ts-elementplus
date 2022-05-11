@@ -3,7 +3,7 @@
 <div class='box'>
     <rz-form :config="formConfig" @submit="submit" :data="searchData"></rz-form>
     <rz-btns :config="btnConfig" @createMenu="createMenu" @deleteItems="deleteItems"></rz-btns>
-    <rz-table ref="menuTable" :config="tableConfig" width="1567px" nopage data-url="/menu/list" index check></rz-table>
+    <me-table ref="menuTable" expand expandIndex :config="tableConfig" width="1567px" nopage data-url="/menu/list" index check></me-table>
         <rz-dialog :createVisible="createMenuVisible" dialogTitle="添加菜单"  @onSubmit="menuSubmit" @outForm="menuOut" width="600px">
         <template #content>
             <el-form :model="menuForm" inline :rules="menuRules" label-width="80px" label-position="right">
@@ -22,9 +22,8 @@
                 <el-row>
                     <el-col :span="12">
                         <el-form-item label="上级菜单" prop="parentId">
-                            <el-select v-model="menuForm.parentId">
-                                <el-option v-for="item in menuList" :label="item.menuNm" :value="item.id"></el-option>
-                            </el-select>
+                            <el-cascader ref="cascader" :props="casProps" @change="getValue" :options="menuList" v-model="menuForm.parent" clearable>
+                            </el-cascader>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
@@ -36,7 +35,9 @@
                 <el-row>
                     <el-col :span="12">
                         <el-form-item label="菜单类型" prop="menuType">
-                            <rz-select v-model="menuForm.menuType" domain="AW007"></rz-select>
+                            <el-select v-model="menuForm.menuType">
+                                <el-option v-for="item in menuTypeList" :label="item.label" :value="item.value"></el-option>
+                            </el-select>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
@@ -66,6 +67,7 @@ import {resetObj} from '/src/utils/public'
 import RzDialog from '../../components/dialog.vue'
 import RzSelect from '../../components//rzSelect.vue'
 import RzTable from '../../components/table.vue'
+import MeTable from '../../components/menuTable.vue'
 import RzForm from '../../components/form.vue'
 import RzBtns from '../../components/buttons.vue'
 
@@ -88,7 +90,11 @@ const btnConfig=[
     {text:'删除', class:'bg-red',functionName:'deleteItems'},
 ];
 const deleteItems = ()=>{
-    const arr = menuTable.value.selection;
+    let arr = menuTable.value.selection;
+    let arr1 = menuTable.value.selection1;
+    let arr2 = menuTable.value.selection2;
+    arr = [...arr1,arr2]
+    console.log(arr)
     if(arr.length<1){
         return;
     }
@@ -118,11 +124,11 @@ const deleteItems = ()=>{
 }
 const createMenu = ()=>{
     http({
-        url:'/menu/list/firstMenu',
+        url:'/menu/list/parentMenu',
         method:'post'
     }).then(res=>{
         if(res.code==200){
-            menuList.value = res.data;
+            menuList.value = [res.data];
             createMenuVisible.value = true
         }
     })
@@ -130,14 +136,16 @@ const createMenu = ()=>{
 }
 const menuOut=(val)=>{
     resetObj(menuForm)
+    menuForm.menuVisible = 'true'
     createMenuVisible.value = false
     submit()
 }
 const menuSubmit=(val)=>{
-    let obj = menuList.value.find(item=>{
-        return item.id == menuForm.parentId
-    })
-    menuForm.menuPath = obj.menuPath
+    // let obj = menuList.value.find(item=>{
+    //     return item.id == menuForm.parentId
+    // })
+    menuForm.menuPath = menuForm.parent.join(',')
+    menuForm.parentId = menuForm.parent[menuForm.parent.length-1]
     http({
         url:'/menu/add',
         method:'post',
@@ -162,11 +170,12 @@ const menuForm = reactive({
     menuNm:'',
     iconUrl:'',
     parentId:'',
+    parent:[],
     menuOrder:'',
     menuType:'',
     remark:'',
     menuPath:'',
-    menuVisible:''
+    menuVisible:'true'
 })
 const menuRules = {
     menuNm:[{required:true,message:'请填写菜单名称',trigger:'blur'}],
@@ -189,12 +198,41 @@ const tableConfig=[
     {label:'备注',prop:'remark',width:''},
 ]
 const menuTable = ref()
+const cascader = ref()
 const refs = getCurrentInstance();
 
+const getValue = ()=>{
+    let arr = cascader.value.getCheckedNodes();
+    let type = arr[0].pathNodes[arr[0].pathNodes.length-1].data.menuType
+    if(type=='菜单'){
+        menuTypeList.value = [
+            {label:"菜单",value:"01"},
+            {label:"页面",value:"02"},
+        ]
+    }else if(type=='页面'){
+        menuTypeList.value = [
+            {label:"按钮",value:"03"},
+        ]
+    }else if(type=='按钮'){
+        menuTypeList.value = []
+    }else{
+        menuTypeList.value = [
+            {label:"菜单",value:"01"},
+            {label:"页面",value:"02"},
+            {label:"按钮",value:"03"},
+        ]
+    }
+}
+const menuTypeList = ref([])
 const submit=(form)=>{
     menuTable.value.onload(form)
 }
-
+const casProps = {
+    checkStrictly:true,
+    value:'id',
+    label:'menuNm',
+    // emitPath:false
+}
 </script>
 <style lang='less' scoped>
 //@import url(); 引入公共css类

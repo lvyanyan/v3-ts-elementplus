@@ -3,7 +3,7 @@
 <el-dialog v-model="props.createVisible" :title="props.dialogTitle" destroy-on-close :close-on-click-modal="false" draggable center :before-close="outForm" :width="width">
         <slot name="content"></slot>
         <div slot="footer" class="dialog-footer">
-            <rz-btns :config="btnConfig" @onSubmit="onSubmit" @outForm="outForm" :style="`text-align:center`"></rz-btns>
+            <rz-btns :config="sub?btnConfig1:btnConfig2" @onSubmit="onSubmit" @outForm="outForm" :style="`text-align:center`"></rz-btns>
         </div>
 </el-dialog>
 </template>
@@ -14,9 +14,20 @@ const props = defineProps({
  	width: String,
     createVisible: Boolean,
     dialogTitle:String,
+    sub:{
+        type:Boolean,
+        default:true
+    }
 })
 const emit = defineEmits(["onSubmit","outForm"]);
-const btnConfig = [
+const btnConfig1 = [
+    {text:'保存', class:'bg-blue',functionName:'onSubmit'},
+    {text:'退出', class:'bg-white',functionName:'outForm'},
+];
+const btnConfig2 = [
+    {text:'退出', class:'bg-white',functionName:'outForm'},
+];
+const btnConfig3 = [
     {text:'保存', class:'bg-blue',functionName:'onSubmit'},
     {text:'退出', class:'bg-white',functionName:'outForm'},
 ];
