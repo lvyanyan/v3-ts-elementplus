@@ -28,7 +28,7 @@
 </template>
 
 <script lang='ts' setup>
-import { ref, getCurrentInstance,reactive} from 'vue'
+import { ref, getCurrentInstance,reactive,onMounted} from 'vue'
 import {useRouter} from 'vue-router'
 import { ElMessage } from 'element-plus';
 import store from '/src/store'
@@ -37,6 +37,12 @@ const route = useRouter();
 const loginForm = reactive({
     userLoginNm:'',
     userPassword:''
+})
+onMounted(()=>{
+    let info = localStorage.getItem('userInfo')
+    if(info){
+        route.push({path:'/'})
+    }
 })
 const submit = ()=>{
     http({
@@ -61,7 +67,7 @@ const submit = ()=>{
                 method:'post',
             }).then(res=>{
                 if(res.code=200){
-                    store.dispatch('setNavicate',res.data.children)
+                    store.dispatch('setNavicate',JSON.stringify(res.data.children))
                     localStorage.setItem('nav',JSON.stringify(res.data.children))
                     route.push({path:'/'})
                 }else{

@@ -22,6 +22,16 @@ const router = createRouter({
             path: '/login',
             component: () => import('../views/login/index.vue')
         },
+        {
+            path: '/:pathMatch(.*)',
+            //访问主页的时候 重定向到index页面
+            redirect: '/404',
+        },
+        {
+            path: '/404',
+            name: '/404',
+            component: () => import('../views/404.vue')
+        }
     ]
 })
 export default router

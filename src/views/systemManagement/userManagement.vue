@@ -51,8 +51,8 @@
 </template>
 
 <script lang='ts' setup>
-import { ref, getCurrentInstance,reactive, computed } from 'vue'
-import { ElMessage } from 'element-plus';
+import { ref, getCurrentInstance,reactive, computed, onMounted} from 'vue'
+import { ElMessage,ElMessageBox } from 'element-plus'; 
 import {resetObj} from '/src/utils/public'
 import store from '/src/store'
 import http from '/src/api/http'
@@ -60,6 +60,17 @@ import RzTable from '../../components/table.vue'
 import RzForm from '../../components/form.vue'
 import RzBtns from '../../components/buttons.vue'
 import RzDialog from '../../components/dialog.vue'
+
+onMounted(()=>{
+    http({
+        url:'/role/list/all',
+        method:'post'
+    }).then(res=>{
+        if(res.code==200){
+            store.dispatch('setRoles',res.data)
+        }
+    })
+})
 
 let createVisible = ref(false)
 
@@ -75,6 +86,15 @@ const btnConfig=[
     {text:'注销/恢复', class:'bg-green',functionName:'destroyUsers'},
 ];
 const deleteItems = ()=>{
+    ElMessageBox.confirm(
+    '此操作会删除所有选中数据，确认删除?',
+    'Warning',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(()=>{
     const arr = userTable.value.selection;
     if(arr.length<1){
         return;
@@ -103,6 +123,10 @@ const deleteItems = ()=>{
         }
         
     })
+  }).catch(()=>{
+
+  })
+
 }
 const destroyUsers = ()=>{
     const arr = userTable.value.selection;

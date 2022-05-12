@@ -15,7 +15,7 @@
                 <template #default="scope">
                     <div>
                         <el-tooltip :content="item.text" placement="top" v-for="item in expandOperation">
-                        <i :class="`rz-icon ${item.class}`" @click.stop="emit(item.functionName,scope.row)"></i>
+                        <i :class="`rz-icon ${item.class}`" @click.stop="emit(item.functionName,scope.row,props.row)"></i>
                         </el-tooltip>
                     </div>
                 </template>
@@ -24,10 +24,17 @@
       </template>
     </el-table-column>
     <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="item.width" :show-overflow-tooltip="item.tooltip">
-          <template #default="scope" v-if="item.edit">
+          <template #default="scope" v-if="item.edit&&!item.ellipsis">
             <span class="edit-cell" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
           </template>
-          <template #default="scope" v-if="item.ellipsis">
+          <template #default="scope" v-if="item.edit&&item.ellipsis">
+            <div :class="scope.row.ellipsis=='true'?'ellipsis-cell':''">
+                <el-icon v-if="scope.row.ellipsis=='true'" style="cursor:pointer" @click.stop="hidden(scope.row)"><arrow-right /></el-icon>
+                <el-icon style="cursor:pointer" v-else @click.stop="hidden(scope.row)"><arrow-down /></el-icon>
+                <span class="edit-cell" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
+            </div>
+          </template>
+          <template #default="scope" v-if="!item.edit&&item.ellipsis">
                 <div :class="scope.row.ellipsis=='true'?'ellipsis-cell':''"><el-icon v-if="scope.row.ellipsis=='true'" style="cursor:pointer" @click.stop="hidden(scope.row)"><arrow-right /></el-icon><el-icon style="cursor:pointer" v-else @click.stop="hidden(scope.row)"><arrow-down /></el-icon><span>{{scope.row[item.prop]}}</span></div>
           </template>
     </el-table-column>
@@ -226,7 +233,7 @@ defineExpose({onload,selection})
         background:#FAFAFA;
     }
     :deep(.el-table__expanded-cell){
-        padding-left:178px;
+        padding-left:49px;
     }
     :deep(.cell){
         text-align:center;

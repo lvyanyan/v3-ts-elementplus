@@ -62,6 +62,7 @@ const ci = getCurrentInstance()
             await $store.dispatch('setTags',tags?tags:[{title:'主页',iconUrl:'/'}]);// 修改
             await $store.dispatch('setTagName',active?active:'/');// 修改
             await $store.dispatch('setNavicate',nav?nav:JSON.stringify([]));
+            navTree.value.setCurrentKey(active);
             route.push({path:$store.state.tagName})
         }
     })
@@ -73,7 +74,7 @@ const loginOut = ()=>{
             }
     localStorage.setItem('active','/')
     localStorage.setItem('tags',JSON.stringify([{title:'主页',iconUrl:'/'}]))
-    localStorage.setItem('userInfo',JSON.stringify(info))
+    localStorage.removeItem('userInfo')
     $store.dispatch('setInfo',JSON.stringify(info))
     route.push('/login')
 }
@@ -104,7 +105,7 @@ const navTree = ref();
 watch(activeName,(n,o)=>{
     navTree.value.setCurrentKey(n);
     let node = navTree.value.getNode(n);
-    $store.dispatch('setBtns',node.data.buttonChildren)
+    if(node&&node.data)$store.dispatch('setBtns',node.data.buttonChildren)
 })
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 const toHome = ()=>{

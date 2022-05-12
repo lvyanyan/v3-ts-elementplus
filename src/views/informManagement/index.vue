@@ -53,7 +53,7 @@
 
 <script lang='ts' setup>
 import { ref, getCurrentInstance,reactive, computed } from 'vue'
-import { ElMessage } from 'element-plus';
+import { ElMessage,ElMessageBox } from 'element-plus'; 
 import {resetObj} from '/src/utils/public'
 import store from '/src/store'
 import http from '/src/api/http'
@@ -209,6 +209,15 @@ const cacelNotice = ()=>{
     })    
 }
 const deleteItems = ()=>{
+        ElMessageBox.confirm(
+    '此操作会删除所有选中数据，确认删除?',
+    'Warning',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(()=>{
     const arr = noticeTable.value.selection;
     if(arr.length<1){
         return;
@@ -237,6 +246,10 @@ const deleteItems = ()=>{
         }
         
     })
+  }).catch(()=>{
+
+  })
+
 }
 const noticeRules = {
     noticeNm:[{required:true,message:'通知名称不能为空',trigger:'blur'}],
@@ -254,8 +267,8 @@ const noticeForm = reactive({
 });
 const tableConfig=[
     // {label:'消息编号',prop:'noticeNo',width:''},
-    {label:'通知名称',prop:'noticeNm',width:'',edit:true,ellipsis:true,},
-    {label:'通知内容',prop:'noticeDetail',width:'',ellipsis:true,},
+    {label:'通知名称',prop:'noticeNm',width:'',edit:true,tooltip:true,},
+    {label:'通知内容',prop:'noticeDetail',width:'',tooltip:true,},
     {label:'通知类型',prop:'noticeTypeNm',width:''},
     {label:'紧急程度',prop:'urgencyDegreeNm',width:''},
     {label:'目标',prop:'targetValue',width:''},
@@ -264,7 +277,7 @@ const tableConfig=[
     {label:'通知状态',prop:'noticeStateNm',width:''},
 ]
 const editRow = (row)=>{
-    if(row.noticeState != '00'){
+    if(row.noticeState == '01'){
         return;
     }
     noticeForm.noticeNm = row.noticeNm

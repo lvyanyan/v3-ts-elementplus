@@ -13,8 +13,8 @@
                         <el-table-column v-if="check" type="selection" width="55" />
                         <el-table-column type="index" label="序号" width="55" />
                         <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="item.width" >
-                            <template #default="scope" v-if="item.ellipsis">
-                                <div :class="scope.row.ellipsis=='true'?'ellipsis-cell':''"><el-icon v-if="scope.row.ellipsis=='true'" style="cursor:pointer" @click.stop="hidden(scope.row)"><arrow-right /></el-icon><el-icon style="cursor:pointer" v-else @click.stop="hidden(scope.row)"><arrow-down /></el-icon><span>{{scope.row[item.prop]}}</span></div>
+                            <template #default="scope" v-if="item.edit">
+                                <span class="edit-cell" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
                             </template>
                         </el-table-column>
                         <el-table-column label="操作" v-if="expandOperate" width="137">
@@ -30,8 +30,8 @@
                 </template>
                 </el-table-column>
             <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="item.width" >
-                <template #default="scope" v-if="item.ellipsis">
-                    <div :class="scope.row.ellipsis=='true'?'ellipsis-cell':''"><el-icon v-if="scope.row.ellipsis=='true'" style="cursor:pointer" @click.stop="hidden(scope.row)"><arrow-right /></el-icon><el-icon style="cursor:pointer" v-else @click.stop="hidden(scope.row)"><arrow-down /></el-icon><span>{{scope.row[item.prop]}}</span></div>
+                <template #default="scope" v-if="item.edit">
+                    <span class="edit-cell" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作" v-if="expandOperate" width="137">

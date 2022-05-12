@@ -3,8 +3,8 @@
 <div class='box'>
     <rz-form :config="formConfig" @submit="submit" :data="searchData"></rz-form>
     <rz-btns :config="btnConfig" @createMenu="createMenu" @deleteItems="deleteItems"></rz-btns>
-    <me-table ref="menuTable" expand expandIndex :config="tableConfig" width="1567px" nopage data-url="/menu/list" index check></me-table>
-        <rz-dialog :createVisible="createMenuVisible" dialogTitle="添加菜单"  @onSubmit="menuSubmit" @outForm="menuOut" width="600px">
+    <me-table ref="menuTable" expand expandIndex @editRow="editRow" :config="tableConfig" width="1567px" nopage data-url="/menu/list" index check></me-table>
+        <rz-dialog :createVisible="createMenuVisible" :dialogTitle="formTitle"  @onSubmit="menuSubmit" @outForm="menuOut" width="600px">
         <template #content>
             <el-form :model="menuForm" inline :rules="menuRules" label-width="80px" label-position="right">
                 <el-row>
@@ -62,7 +62,7 @@
 <script lang='ts' setup>
 import { ref, getCurrentInstance, reactive} from 'vue'
 import http from '/src/api/http.ts'
-import { ElMessage } from 'element-plus';
+import { ElMessage,ElMessageBox } from 'element-plus'; 
 import {resetObj} from '/src/utils/public'
 import RzDialog from '../../components/dialog.vue'
 import RzSelect from '../../components//rzSelect.vue'
@@ -90,6 +90,15 @@ const btnConfig=[
     {text:'删除', class:'bg-red',functionName:'deleteItems'},
 ];
 const deleteItems = ()=>{
+    ElMessageBox.confirm(
+    '此操作会删除所有选中数据，确认删除?',
+    'Warning',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(()=>{
     let arr = menuTable.value.selection;
     let arr1 = menuTable.value.selection1;
     let arr2 = menuTable.value.selection2;
@@ -121,6 +130,10 @@ const deleteItems = ()=>{
             })
         }
     })
+  }).catch(()=>{
+
+  })
+
 }
 const createMenu = ()=>{
     http({
@@ -128,33 +141,64 @@ const createMenu = ()=>{
         method:'post'
     }).then(res=>{
         if(res.code==200){
+            formTitle.value="添加菜单"
             menuList.value = [res.data];
             createMenuVisible.value = true
         }
     })
     
 }
+const formTitle = ref('添加菜单');
 const menuOut=(val)=>{
     resetObj(menuForm)
     menuForm.menuVisible = 'true'
     createMenuVisible.value = false
     submit()
 }
+const editRow = (row)=>{
+    http({
+        url:'/menu/list/parentMenu',
+        method:'post'
+    }).then(res=>{
+        if(res.code==200){
+            formTitle.value="更新菜单"
+            for(let i in menuForm){
+                menuForm[i] = row[i]
+            }
+            menuList.value = [res.data];
+            let arr = menuForm.menuPath.split(',')
+            let parents = []
+            arr.forEach(item=>{
+                parents.push(parseInt(item))
+            })
+            if(row.menuVisible == '是'){
+                menuForm.menuVisible = 'true'
+            }else{
+                menuForm.menuVisible = 'false'
+            }
+            menuForm.parent = parents;
+            createMenuVisible.value = true;
+
+        }
+    })
+}
 const menuSubmit=(val)=>{
     // let obj = menuList.value.find(item=>{
     //     return item.id == menuForm.parentId
     // })
+    let url = formTitle.value == '添加菜单'?'/menu/add':'/menu/update'
+    let msg = formTitle.value == '添加菜单'?'新建成功':'修改成功'
     menuForm.menuPath = menuForm.parent.join(',')
     menuForm.parentId = menuForm.parent[menuForm.parent.length-1]
     http({
-        url:'/menu/add',
+        url,
         method:'post',
         data:menuForm
     }).then(res=>{
         if(res.code=="200"){
             ElMessage({
                 type:'success',
-                message:'新建成功'
+                message:msg
             })
             menuOut()
         }else{
@@ -167,6 +211,7 @@ const menuSubmit=(val)=>{
 }
 const menuList = ref([])
 const menuForm = reactive({
+    id:'',
     menuNm:'',
     iconUrl:'',
     parentId:'',
@@ -186,7 +231,7 @@ const menuRules = {
     show:[{required:true,message:'请选择是否可见',trigger:'blur'}],
 }
 const tableConfig=[
-    {label:'菜单名称',prop:'menuNm',width:''},
+    {label:'菜单名称',prop:'menuNm',width:'',edit:true},
     {label:'菜单类型',prop:'menuType',width:''},
     {label:'访问地址',prop:'iconUrl',width:''},
     {label:'菜单顺序',prop:'menuOrder',width:''},

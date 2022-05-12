@@ -58,7 +58,7 @@
 
 <script lang='ts' setup>
 import { ref, reactive, getCurrentInstance} from 'vue'
-import { ElMessage } from 'element-plus';
+import { ElMessage,ElMessageBox } from 'element-plus'; 
 import http from '/src/api/http.ts'
 import {resetObj} from '/src/utils/public'
 import RzTable from '../../components/table.vue'
@@ -83,6 +83,15 @@ const btnConfig=[
     {text:'删除', class:'bg-red',functionName:'deleteItems'},
 ];
 const deleteItems = ()=>{
+        ElMessageBox.confirm(
+    '此操作会删除所有选中数据，确认删除?',
+    'Warning',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(()=>{
     const arr = authorTable.value.selection;
     if(arr.length<1){
         return;
@@ -111,6 +120,10 @@ const deleteItems = ()=>{
         }
         
     })
+  }).catch(()=>{
+
+  })
+
 }
 const createRules = {
     roleNm:[{required:true,message:'角色不能为空',trigger:'blur'}],
@@ -161,12 +174,21 @@ const assignPermission = (row)=>{
             permissionForm.roleId = row.roleId;
             permissionForm.roleNm = row.roleNm;
             menuData.value = [res.data];
-            menuData.value.forEach(item=>{
-                if(item.ifAssigned==true){
-                    checkedList.value.push(item.id)
+            http({
+                url:'/role/list/assigned/menu',
+                method:'post',
+                data:{roleId:row.roleId}
+            }).then(ress=>{
+                if(ress.code==200){
+                    checkedList.value = ress.data
+                    permissionVisible.value = true;
+                }else{
+                    ElMessage({
+                        type:'error',
+                        message:ress.msg
+                    })
                 }
             })
-            permissionVisible.value = true;
         }
     })
 }

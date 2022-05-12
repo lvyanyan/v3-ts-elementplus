@@ -72,3 +72,7 @@
 .rz-recall {
     background-image: url(./assets/recall.png);
 }
+
+.rz-close {
+    background-image: url(./assets/close.png);
+}
