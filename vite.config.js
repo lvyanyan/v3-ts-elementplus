@@ -24,6 +24,14 @@ module.exports = {
    */
   outDir: 'dist',
   css: {
+    preprocessorOptions:{
+        less:{
+            modifyVars:{
+                hack: `true; @import (reference) "${path.resolve('src/default.less')}";`,
+            },
+            javascriptEnabled:true
+        }
+    },
     postcss: {
       plugins: [
         postCssPxToRem({

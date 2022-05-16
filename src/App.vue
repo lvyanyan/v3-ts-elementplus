@@ -14,6 +14,9 @@ export default {
       ElConfigProvider
   },
       setup() {
+          window.onresize=function () {
+              window.location.reload();
+          }
       return {
         locale: zhCn,
       }

@@ -1,9 +1,9 @@
 <!--  -->
 <template>
 <div class='box'>
-    <rz-form :config="formConfig" @submit="submit" :data="searchData"></rz-form>
+    <rz-form :config="formConfig" @submit="submit" :data="searchData" @change-data="recieveData"></rz-form>
     <rz-btns :config="btnConfig" @createUser="createUser" @deleteItems="deleteItems" @destroyUsers="destroyUsers"></rz-btns>
-    <rz-table ref="userTable" :config="tableConfig" width="1567px" index check operate :opeation="tableOperation" @deleteItem="deleteItem" @destroyUser="destroyUser" @resetPwd="resetPwd" @personSetting="personSetting" data-url="/user/list" data-method="post" >
+    <rz-table ref="userTable" :config="tableConfig" :data-params="dataParams" @editRow="editRow" width="1567px" index check operate :opeation="tableOperation" @deleteItem="deleteItem" @destroyUser="destroyUser" @resetPwd="resetPwd" @personSetting="personSetting" data-url="/user/list" data-method="post" >
     </rz-table>
     <rz-dialog v-if="settingVisible" :createVisible="settingVisible" dialogTitle="角色配置"  @onSubmit="setSubmit" @outForm="setOutForm" width="800px">
     <template #content>
@@ -16,22 +16,22 @@
         </el-form>
     </template>
     </rz-dialog>
-    <rz-dialog v-if="createVisible" :createVisible="createVisible" dialogTitle="新建用户"  @onSubmit="onSubmit" @outForm="outForm" width="800px">
+    <rz-dialog v-if="createVisible" :createVisible="createVisible" :dialogTitle="createTitle"  @onSubmit="onSubmit" @outForm="outForm" width="800px">
     <template #content>
         <el-form :inline="true" class="rz-form" :model="createData" :rules="createRules" label-position="right" label-width="120px">
             <el-form-item label="帐号" prop="userNo">
-                <el-input v-model="createData.userNo" placeholder="请输入帐号">
+                <el-input v-model="createData.userNo" :disabled="createTitle == '修改用户'" placeholder="请输入帐号">
                 </el-input>
             </el-form-item>
             <el-form-item label="用户名" prop="userNm">
                 <el-input v-model="createData.userNm" placeholder="请输入用户名">
                 </el-input>
             </el-form-item>
-            <el-form-item label="密码" prop="userPassword">
+            <el-form-item label="密码" prop="userPassword" v-if="createTitle == '新建用户'">
                 <el-input v-model="createData.userPassword" placeholder="请输入密码">
                 </el-input>
             </el-form-item>
-            <el-form-item label="角色选择" prop="roleId">
+            <el-form-item label="角色选择" prop="roleId" v-if="createTitle == '新建用户'">
                 <el-select v-model="createData.roleId"  placeholder="请选择角色">
                         <el-option v-for="item in authorlist" :label="item.roleNm" :value="item.roleId"></el-option>
                 </el-select>
@@ -85,6 +85,12 @@ const btnConfig=[
     {text:'删除', class:'bg-red',functionName:'deleteItems'},
     {text:'注销/恢复', class:'bg-green',functionName:'destroyUsers'},
 ];
+const dataParams = reactive({})
+const recieveData = (n)=>{
+    for(let i in n){
+        dataParams[i] = n[i]
+    }
+}
 const deleteItems = ()=>{
     ElMessageBox.confirm(
     '此操作会删除所有选中数据，确认删除?',
@@ -195,9 +201,9 @@ const createRules = {
 }
 
 const tableConfig=[
-    {label:'用户账号',prop:'userNo',width:''},
+    {label:'用户账号',prop:'userNo',width:'',edit:true},
     {label:'用户名',prop:'userNm',width:''},
-    {label:'创建时间',prop:'createDate',width:''},
+    {label:'创建时间',prop:'createDate',width:'206px'},
     {label:'角色',prop:'roleNm',width:''},
     {label:'状态',prop:'status',width:''},
     {label:'联系电话',prop:'phone',width:''},
@@ -332,6 +338,7 @@ const createUser = ()=>{
         method:'post'
     }).then(res=>{
         authorlist.value = res.data
+        createTitle.value = "新建用户"
         createVisible.value = true
     })
 }
@@ -340,9 +347,18 @@ const outForm=()=>{
     createVisible.value = false
     submit();
 }
+const createTitle = ref('新建用户')
+const editRow = (row)=>{
+    createTitle.value = "修改用户"
+    for(let i in createData){
+        createData[i] = row[i]
+    }
+    createVisible.value = true
+}
 const onSubmit=()=>{
+    let url = createTitle.value=='新建用户'?'/user/create':'/user/update'
     http({
-        url:'/user/create',
+        url,
         method:'post',
         data:createData
     }).then(res=>{
@@ -362,7 +378,7 @@ const onSubmit=()=>{
     })
 }
 const submit=(form)=>{
-    userTable.value.onload(form)
+    userTable.value.onload(form,'1')
 }
 
 </script>

@@ -1,17 +1,17 @@
 <!--  -->
 <template>
 <div class='box'>
-    <rz-form :config="formConfig" @submit="submit" :data="searchData"></rz-form>
+    <rz-form :config="formConfig" @submit="submit" :data="searchData" @change-data="recieveData"></rz-form>
     <rz-btns :config="btnConfig"  @createAuthor="createAuthor" @deleteItems="deleteItems"></rz-btns>
-    <rz-table ref="authorTable" :config="tableConfig" width="1567px" index check operate :opeation="tableOperation" data-url="/role/list" @memberShip="memberShip" @assignPermission="assignPermission" @deleteItem="deleteItem" data-method="post"></rz-table>
-    <rz-dialog :createVisible="createVisible" dialogTitle="新建角色"  @onSubmit="onSubmit" @outForm="outForm" width="800px">
+    <rz-table ref="authorTable" @editRow="editRow" :data-params="dataParams" :config="tableConfig" width="1567px" index check operate :opeation="tableOperation" data-url="/role/list" @memberShip="memberShip" @assignPermission="assignPermission" @deleteItem="deleteItem" data-method="post"></rz-table>
+    <rz-dialog :createVisible="createVisible" :dialogTitle="authorTitle"  @onSubmit="onSubmit" @outForm="outForm" width="800px">
         <template #content>
         <el-form class="rz-form" :model="createForm" :rules="createRules" label-width="120px" label-position="right">
             <el-form-item label="角色名称:" prop="roleNm">
                 <el-input v-model="createForm.roleNm" placeholder="请输入角色名称"></el-input>
             </el-form-item>
             <el-form-item label="描述:">
-                <el-input type="textarea" v-model="createForm.description" :rows="8" placeholder="请输入角色描述"></el-input>
+                <el-input type="textarea" v-model="createForm.description" :rows="8" placeholder="请输入角色描述" maxlength="1000" show-word-limit></el-input>
             </el-form-item>
         </el-form>
         </template>
@@ -82,6 +82,12 @@ const btnConfig=[
     {text:'新建角色', class:'bg-blue',functionName:'createAuthor'},
     {text:'删除', class:'bg-red',functionName:'deleteItems'},
 ];
+const dataParams = reactive({})
+const recieveData = (n)=>{
+    for(let i in n){
+        dataParams[i] = n[i]
+    }
+}
 const deleteItems = ()=>{
         ElMessageBox.confirm(
     '此操作会删除所有选中数据，确认删除?',
@@ -129,6 +135,7 @@ const createRules = {
     roleNm:[{required:true,message:'角色不能为空',trigger:'blur'}],
 }
 const createForm = reactive({
+    roleId:'',
     roleNm:'',
     description:''
 })
@@ -345,10 +352,10 @@ const memberOut = ()=>{
 }
 const memberVisible = ref(false);
 const userSubmit = (form)=>{
-    userTable.value.onload(form)
+    userTable.value.onload(form,'1')
 }
 const noneSubmit = (form)=>{
-    noneTable.value.onload(form)
+    noneTable.value.onload(form,'1')
 }
 const memberShip = (row)=>{
     memberVisible.value = true;
@@ -356,10 +363,10 @@ const memberShip = (row)=>{
     memberForm.roleNm = row.roleNm
 }
 const tableConfig=[
-    {label:'角色名称',prop:'roleNm',width:''},
+    {label:'角色名称',prop:'roleNm',width:'',edit:true},
     {label:'描述',prop:'description',width:''},
     {label:'创建人',prop:'createUser',width:''},
-    {label:'创建时间',prop:'createDate',width:''},
+    {label:'创建时间',prop:'createDate',width:'206px'},
     {label:'修改人',prop:'updateUser',width:''},
     {label:'修改时间',prop:'updateDate',width:''},
 ]
@@ -370,15 +377,25 @@ const menuTree = ref();
 const refs = getCurrentInstance();
 const createAuthor = ()=>{
     createVisible.value = true
+    authorTitle.value = '新建角色'
 }
 const outForm=(val)=>{
     resetObj(createForm)
     submit()
     createVisible.value = false
 }
+const authorTitle = ref('新建角色')
+const editRow = (row)=>{
+    authorTitle.value = '修改角色'
+    for(let i in createForm){
+        createForm[i] = row[i]
+    }
+    createVisible.value = true
+}
 const onSubmit=()=>{
+    let url = authorTitle.value == '修改角色'?'/role/update':'/role/create'
     http({
-        url:'/role/create',
+        url,
         method:'post',
         data:createForm
     }).then(res=>{
@@ -397,7 +414,7 @@ const onSubmit=()=>{
     })
 }
 const submit=(form)=>{
-    authorTable.value.onload(form)
+    authorTable.value.onload(form,'1')
 }
 
 </script>

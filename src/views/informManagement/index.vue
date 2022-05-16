@@ -1,22 +1,30 @@
 <!--  -->
 <template>
 <div class='box'>
-    <rz-form :config="formConfig" @submit="submit" :data="searchData"></rz-form>
+    <rz-form :config="formConfig" @submit="submit" :data="searchData" @change-data="recieveData"></rz-form>
     <rz-btns :config="btnConfig" @createNotice="createNotice" @deleteItems="deleteItems" @publicNotice="publicNotice" @copyNotice="copyNotice" @cacelNotice="cacelNotice"></rz-btns>
-    <rz-table ref="noticeTable" :config="tableConfig" @editRow="editRow" width="1567px" index check data-url="/notice/list" >
+    <rz-table ref="noticeTable" :config="tableConfig" @editRow="editRow" width="1567px" index check data-url="/notice/list" :data-params="dataParams">
     </rz-table>
     <rz-dialog v-if="noticeVisible" :createVisible="noticeVisible" :dialogTitle="formTitle"  @onSubmit="noticeSubmit" @outForm="noticeOut" width="800px">
         <template #content>
-            <el-form :model="noticeForm" inline :rules="noticeRules">
+            <el-form :model="noticeForm" inline :rules="noticeRules" :label-width="px2rem(100)" label-position="right">
+                <el-row>
+                <el-col :span="24">
+                <el-form-item label="消息名称" prop="noticeNm">
+                    <el-input v-model="noticeForm.noticeNm" maxlength="100" show-word-limit class="notice-nm"></el-input>
+                </el-form-item>
+                </el-col>
+
+                </el-row>
                 <el-row>
                 <el-col :span="12">
-                <el-form-item label="消息名称" prop="noticeNm">
-                    <el-input v-model="noticeForm.noticeNm" maxlength="100" show-word-limit></el-input>
+                <el-form-item label="消息类型" prop="noticeType">
+                    <rz-select v-model="noticeForm.noticeType" domain="AW004" class="notice-type"></rz-select>
                 </el-form-item>
                 </el-col>
                 <el-col :span="12">
                 <el-form-item label="紧急程度" prop="urgencyDegree">
-                    <rz-select v-model="noticeForm.urgencyDegree" domain="AW005"></rz-select>
+                    <rz-select v-model="noticeForm.urgencyDegree" class="notice-urgencyDegree" domain="AW005"></rz-select>
                 </el-form-item>
                 <!-- <el-form-item label="目标对象">
                     <el-input disabled v-model="noticeForm.target"></el-input>
@@ -24,27 +32,12 @@
                 </el-col>
                 </el-row>
                 <el-row>
-                <el-col :span="12">
-                <el-form-item label="消息类型" prop="noticeType">
-                    <rz-select v-model="noticeForm.noticeType" domain="AW004"></rz-select>
-                </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                <el-form-item label="消息内容" prop="noticeDetail">
-                    <el-input type="textarea" v-model="noticeForm.noticeDetail" maxlength="1000" show-word-limit></el-input>
-                </el-form-item>
-                <!-- <el-form-item label="紧急程度">
-                    <rz-select v-model="noticeForm.urgencyDegree" domain="AW005"></rz-select>
-                </el-form-item> -->
-                </el-col>
-                </el-row>
-                <!-- <el-row>
                 <el-col>
                 <el-form-item label="消息内容">
-                    <el-input type="textarea" v-model="noticeForm.noticeDetail"></el-input>
+                    <el-input type="textarea" v-model="noticeForm.noticeDetail" class="notice-detail" :rows="8" maxlength="1000" show-word-limit></el-input>
                 </el-form-item>
                 </el-col>
-                </el-row> -->
+                </el-row>
             </el-form>
         </template>
     </rz-dialog>
@@ -54,7 +47,7 @@
 <script lang='ts' setup>
 import { ref, getCurrentInstance,reactive, computed } from 'vue'
 import { ElMessage,ElMessageBox } from 'element-plus'; 
-import {resetObj} from '/src/utils/public'
+import {resetObj, px2rem} from '/src/utils/public'
 import store from '/src/store'
 import http from '/src/api/http'
 import RzTable from '../../components/table.vue'
@@ -87,6 +80,12 @@ const btnConfig=[
     {text:'撤回', class:'bg-green',functionName:'cacelNotice'},
     {text:'删除', class:'bg-red',functionName:'deleteItems'},    
 ];
+const dataParams = reactive({})
+const recieveData = (n)=>{
+    for(let i in n){
+        dataParams[i] = n[i]
+    }
+}
 const formTitle = ref('新建通知')
 const createNotice = ()=>{
     formTitle.value = '新建通知';
@@ -292,7 +291,7 @@ const editRow = (row)=>{
 const noticeTable = ref()
 const refs = getCurrentInstance();
 const submit=(form)=>{
-    noticeTable.value.onload(form)
+    noticeTable.value.onload(form,'1')
 }
 
 </script>
@@ -313,6 +312,18 @@ const submit=(form)=>{
         line-height:50px;
         margin-right:15px;
         color:#000;
+}
+:deep(.notice-nm){
+    width:650px;
+}
+:deep(.notice-detail){
+    width:650px;
+}
+:deep(.notice-type){
+    width:278px;
+}
+:deep(.notice-urgencyDegree){
+    width:278px;
 }
 :deep(.el-dialog .set-content){
         height:50px;

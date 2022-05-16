@@ -7,9 +7,9 @@
                 <span>字典分类</span>
             </div>
         </template>
-        <rz-form :config="formConfig" @submit="submit" :data="searchData"></rz-form>
+        <rz-form :config="formConfig" @submit="submit" :data="searchData" @change-data="recieveData"></rz-form>
         <rz-btns :config="btnConfig" @createDic="createDic"  @editDic="editDic" @deleteDic="deleteDic"></rz-btns>
-        <rz-table ref="dicTable" highlight :config="tableConfig" width="1567px" height="460px" index check data-url="/dic/domain/list" @dicDomain="updateTable" >
+        <rz-table ref="dicTable" highlight @editRow="editRowdic" :data-params="dataParams" :config="tableConfig" width="1567px" height="460px" index check data-url="/dic/domain/list" @dicDomain="updateTable" >
         </rz-table>
     </el-card>
     <el-card class="right-card">
@@ -32,20 +32,20 @@
             <el-form :model="dicForm.data" inline :rules="dicRules">
                 <el-row>
                     <el-col :span="12">
-                        <el-form-item label="域码" prop="dicDomain">
-                            <el-input v-model="dicForm.data.dicDomain"></el-input>
+                        <el-form-item label="字典域" prop="dicDomain">
+                            <el-input v-model="dicForm.data.dicDomain" maxlength="20" show-word-limit></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="域值" prop="dicDomainNm">
-                            <el-input v-model="dicForm.data.dicDomainNm"></el-input>
+                        <el-form-item label="域名称" prop="dicDomainNm">
+                            <el-input v-model="dicForm.data.dicDomainNm" maxlength="50" show-word-limit></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row>
                     <el-col>
                     <el-form-item label="描述">
-                        <el-input type="textarea" :rows="10" v-model="dicForm.data.dicDesc" class="text-area"></el-input>
+                        <el-input type="textarea" :rows="10" v-model="dicForm.data.dicDesc" class="text-area" maxlength="1000" show-word-limit></el-input>
                     </el-form-item>
                     </el-col>
                 </el-row>
@@ -104,23 +104,29 @@ const btnConfig=[
     {text:'编辑', class:'bg-green',functionName:'editDic'},
     {text:'删除', class:'bg-red',functionName:'deleteDic'},
 ];
+const dataParams = reactive({})
+const recieveData = (n)=>{
+    for(let i in n){
+        dataParams[i] = n[i]
+    }
+}
 const detailBtnConfig=[
     {text:'新建', class:'bg-blue',functionName:'createDetail'},
     {text:'编辑', class:'bg-green',functionName:'editDetail'},
     {text:'删除', class:'bg-red',functionName:'deleteDetails'},
 ];
 const tableConfig=[
-    {label:'字典域',prop:'dicDomain',width:''},
-    {label:'域名称',prop:'dicDomainNm',width:''},
-    {label:'描述',prop:'dicDesc',width:''},
-    {label:'创建人',prop:'createUser',width:''},
-    {label:'创建时间',prop:'createDate',width:''},
-    {label:'修改人',prop:'updateUser',width:''},
-    {label:'修改时间',prop:'updateDate',width:''},
+    {label:'字典域',prop:'dicDomain',width:'96px',edit:true},
+    {label:'域名称',prop:'dicDomainNm',width:'119px'},
+    {label:'描述',prop:'dicDesc',width:'',tooltip:true},
+    {label:'创建人',prop:'createUser',width:'86px'},
+    {label:'创建时间',prop:'createDate',width:'186px'},
+    {label:'修改人',prop:'updateUser',width:'86px'},
+    {label:'修改时间',prop:'updateDate',width:'186px'},
 ]
 const detailTableConfig=[
-    {label:'类型编码',prop:'dicKey',width:''},
-    {label:'类型名称',prop:'dicValue',width:''},
+    {label:'类型编码',prop:'dicKey',width:'109px'},
+    {label:'类型名称',prop:'dicValue',width:'126px'},
 ]
 const dicTable = ref()
 const detailTable = ref()
@@ -146,6 +152,12 @@ const editDic = ()=>{
         return;
     }
     dicForm.data = row[0];
+    dicTitle.value = '编辑字典分类'
+    createDicVisible.value = true
+}
+const editRowdic = (row)=>{
+
+    dicForm.data = row;
     dicTitle.value = '编辑字典分类'
     createDicVisible.value = true
 }
@@ -203,8 +215,8 @@ const deleteDic = ()=>{
 
 }
 const dicRules = {
-    dicDomainNm:[{required:true,message:'域值不能为空',trigger:'blur'}],
-    dicDomain:[{required:true,message:'域码不能为空',trigger:'blur'}],
+    dicDomainNm:[{required:true,message:'域名城不能为空',trigger:'blur'}],
+    dicDomain:[{required:true,message:'字典域不能为空',trigger:'blur'}],
 }
 const dicForm = reactive({data:{
     dicDesc:'',
@@ -338,7 +350,7 @@ const detailSubmit=(val)=>{
     })
 }
 const submit=(form)=>{
-    dicTable.value.onload(form)
+    dicTable.value.onload(form,'1')
 }
 const detail = reactive({dicDomain:'',dicDomainNm:''})
 const updateTable = (val)=>{
@@ -372,10 +384,12 @@ onMounted(()=>{
     }
     .left-card{
         width:1146px;
+        height:100%;
         margin-right:30px;
     }
     .right-card{
         width:368px;
+        height:100%;
     }
 }
 :deep(.el-dialog--center .el-dialog__body){
@@ -383,6 +397,5 @@ onMounted(()=>{
 }
 .text-area{
     width:576px;
-    height:236px;
 }
 </style>

@@ -1,17 +1,27 @@
 <template>
-  <el-table :data="tableData" :highlight-current-row="highlight" :border="border" :row-key="expand?'id':''" style="width" :height="height"  :row-class-name="tableRowClassName" @row-click="changeDic" :header-row-class-name="headerStyle" @selection-change="getSelection">
-    <el-table-column v-if="check" type="selection" width="55" />
-    <el-table-column v-if="index" type="index" label="序号" width="55" />
+  <el-table :data="tableData" :highlight-current-row="highlight" :border="border" :row-key="expand?'id':''" :style="`width:${px2rem(width)};height:${px2rem(height)}`" :height="px2rem(height)"  :row-class-name="tableRowClassName" @row-click="changeDic" :header-row-class-name="headerStyle" @selection-change="getSelection">
+    <el-table-column v-if="check" type="selection" :width="px2rem(55)" />
+    <el-table-column v-if="index" type="index" label="序号" :width="px2rem(55)" />
     <el-table-column type="expand" v-if="expand">
       <template #default="props">
         <el-table :data="props.row.children" :header-row-class-name="headerStyle" >
-            <el-table-column v-if="expandIndex" type="index" label="序号" width="72" />
-            <el-table-column v-for="item in expandConfig" :prop="item.prop" :label="item.label" :width="item.width" >
-                <template #default="scope" v-if="item.ellipsis">
-                    <div :class="scope.row.ellipsis=='true'?'ellipsis-cell':''"><el-icon v-if="scope.row.ellipsis=='true'" style="cursor:pointer" @click.stop="hidden(scope.row)"><arrow-right /></el-icon><el-icon style="cursor:pointer" v-else @click.stop="hidden(scope.row)"><arrow-down /></el-icon><span>{{scope.row[item.prop]}}</span></div>
+            <el-table-column v-if="expandIndex" type="index" label="序号" :width="px2rem(72)" />
+            <el-table-column v-for="item in expandConfig" :prop="item.prop" :label="item.label" :width="px2rem(item.width)" >
+                <template #default="scope" v-if="item.edit&&!item.ellipsis">
+                    <span class="edit-cell" @click="$emit('editChild',scope.row,props.row)">{{scope.row[item.prop]}}</span>
+                </template>
+                <template #default="scope" v-if="item.edit&&item.ellipsis">
+                    <div :class="scope.row.ellipsis=='true'?'ellipsis-cell':''">
+                        <el-icon v-if="scope.row.ellipsis=='true'" style="cursor:pointer" @click.stop="hidden(scope.row)"><arrow-right /></el-icon>
+                        <el-icon style="cursor:pointer" v-else @click.stop="hidden(scope.row)"><arrow-down /></el-icon>
+                        <span class="edit-cell" @click="$emit('editChild',scope.row,props.row)">{{scope.row[item.prop]}}</span>
+                    </div>
+                </template>
+                <template #default="scope" v-if="!item.edit&&item.ellipsis">
+                        <div :class="scope.row.fellipsis=='true'?'ellipsis-cell':''"><el-icon v-if="scope.row.ellipsis=='true'" style="cursor:pointer" @click.stop="hidden(scope.row)"><arrow-right /></el-icon><el-icon style="cursor:pointer" v-else @click.stop="hidden(scope.row)"><arrow-down /></el-icon><span>{{scope.row[item.prop]}}</span></div>
                 </template>
             </el-table-column>
-            <el-table-column label="操作" v-if="expandOperate" width="137">
+            <el-table-column label="操作" v-if="expandOperate" :width="px2rem(137)">
                 <template #default="scope">
                     <div>
                         <el-tooltip :content="item.text" placement="top" v-for="item in expandOperation">
@@ -23,7 +33,7 @@
         </el-table>
       </template>
     </el-table-column>
-    <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="item.width" :show-overflow-tooltip="item.tooltip">
+    <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="px2rem(item.width)" :show-overflow-tooltip="item.tooltip">
           <template #default="scope" v-if="item.edit&&!item.ellipsis">
             <span class="edit-cell" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
           </template>
@@ -73,6 +83,7 @@
 
 <script lang="ts" setup>
 import {ref, onMounted} from 'vue'
+import {px2rem} from '/src/utils/public'
 import {ArrowRight,ArrowDown} from '@element-plus/icons-vue'
 import http from '/src/api/http'
 const props = defineProps({
@@ -94,7 +105,7 @@ const props = defineProps({
      expand: Boolean,
      height:{
          type:String,
-         default:"528px"
+         default:"528"
      },
      border:{
          type:Boolean,
@@ -132,7 +143,10 @@ const hidden = (row)=>{
         row.ellipsis = 'true'
     }
 }
-const onload=(param)=>{
+const onload=(param,pageNumber)=>{
+    if(pageNumber){
+        currentPage.value = pageNumber
+    }
     let params = props.dataParams?props.dataParams:{};
     let page = {
         pageNumber:currentPage.value,
@@ -199,6 +213,9 @@ const tableRowClassName = ({
   row: User
   rowIndex: number
 }) => {
+    if(props.dataUrl == '/service/list'){
+        return ''
+    }
   if (rowIndex%2==0) {
     return 'single-row'
   } else  {
@@ -244,7 +261,7 @@ defineExpose({onload,selection})
         }
         .edit-cell{
             cursor:pointer;
-            color:#e4393c;
+            color:#409eff;
             font-weight:400;
         }
     }

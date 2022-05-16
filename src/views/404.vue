@@ -29,6 +29,6 @@ const backHome = ()=>{
     padding-left:5px;
     padding-right:5px;
     text-decoration:underline;
-    color:#e4393c;
+    color:#409eff;
 }
 </style>

@@ -1,29 +1,29 @@
 <!--  -->
 <template>
 <div class='box'>
-    <rz-form :config="formConfig" @submit="submit" :data="searchData"></rz-form>
+    <rz-form :config="formConfig" @submit="submit" :data="searchData" @change-data="recieveData"></rz-form>
     <rz-btns :config="btnConfig" @createMenu="createMenu" @deleteItems="deleteItems"></rz-btns>
-    <me-table ref="menuTable" expand expandIndex @editRow="editRow" :config="tableConfig" width="1567px" nopage data-url="/menu/list" index check></me-table>
-        <rz-dialog :createVisible="createMenuVisible" :dialogTitle="formTitle"  @onSubmit="menuSubmit" @outForm="menuOut" width="600px">
+    <me-table ref="menuTable" expand expandIndex @editRow="editRow" :config="tableConfig" width="1567px" nopage data-url="/menu/list" index check :data-params="dataParams"></me-table>
+        <rz-dialog :createVisible="createMenuVisible" :dialogTitle="formTitle"  @onSubmit="menuSubmit" @outForm="menuOut" width="984px">
         <template #content>
-            <el-form :model="menuForm" inline :rules="menuRules" label-width="80px" label-position="right">
+            <el-form class="menu-form" :model="menuForm" inline :rules="menuRules" label-width="80px" label-position="right">
                 <el-row>
                     <el-col :span="12">
-                        <el-form-item label="菜单名称" prop="menuNm">
-                            <el-input v-model="menuForm.menuNm"></el-input>
+                        <el-form-item label="上级菜单" prop="parentId">
+                            <el-cascader ref="cascader" :props="casProps" @change="getValue" :options="menuList" v-model="menuForm.parent" clearable>
+                            </el-cascader>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="菜单地址" prop="iconUrl">
+                        <el-form-item label="菜单地址">
                             <el-input v-model="menuForm.iconUrl"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row>
                     <el-col :span="12">
-                        <el-form-item label="上级菜单" prop="parentId">
-                            <el-cascader ref="cascader" :props="casProps" @change="getValue" :options="menuList" v-model="menuForm.parent" clearable>
-                            </el-cascader>
+                        <el-form-item label="菜单名称" prop="menuNm">
+                            <el-input v-model="menuForm.menuNm"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
@@ -48,9 +48,9 @@
                     </el-col>
                 </el-row>
                 <el-row>
-                    <el-col :span="12">
+                    <el-col :span="24">
                         <el-form-item label="备注" prop="remark">
-                            <el-input type="textarea" v-model="menuForm.remark"></el-input>
+                            <el-input type="textarea" v-model="menuForm.remark" :rows="6" maxlength="1000" show-word-limit class="menu-remark"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -89,6 +89,12 @@ const btnConfig=[
     {text:'新建菜单', class:'bg-blue',functionName:'createMenu'},
     {text:'删除', class:'bg-red',functionName:'deleteItems'},
 ];
+const dataParams = reactive({})
+const recieveData = (n)=>{
+    for(let i in n){
+        dataParams[i] = n[i]
+    }
+}
 const deleteItems = ()=>{
     ElMessageBox.confirm(
     '此操作会删除所有选中数据，确认删除?',
@@ -102,7 +108,8 @@ const deleteItems = ()=>{
     let arr = menuTable.value.selection;
     let arr1 = menuTable.value.selection1;
     let arr2 = menuTable.value.selection2;
-    arr = [...arr1,arr2]
+    console.log(arr,arr1,arr2)
+    arr = [...arr,...arr1,...arr2]
     console.log(arr)
     if(arr.length<1){
         return;
@@ -178,7 +185,9 @@ const editRow = (row)=>{
             }
             menuForm.parent = parents;
             createMenuVisible.value = true;
-
+            setTimeout(() => {
+                getValue()
+            });
         }
     })
 }
@@ -224,23 +233,23 @@ const menuForm = reactive({
 })
 const menuRules = {
     menuNm:[{required:true,message:'请填写菜单名称',trigger:'blur'}],
-    iconUrl:[{required:true,message:'请填写菜单地址',trigger:'blur'}],
+    // iconUrl:[{required:true,message:'请填写菜单地址',trigger:'blur'}],
     parentId:[{required:true,message:'请选择上级菜单',trigger:'blur'}],
     menuOrder:[{required:true,message:'请填写菜单顺序',trigger:'blur'}],
     menuType:[{required:true,message:'请选择菜单类型',trigger:'blur'}],
     show:[{required:true,message:'请选择是否可见',trigger:'blur'}],
 }
 const tableConfig=[
-    {label:'菜单名称',prop:'menuNm',width:'',edit:true},
-    {label:'菜单类型',prop:'menuType',width:''},
-    {label:'访问地址',prop:'iconUrl',width:''},
+    {label:'菜单名称',prop:'menuNm',width:'198px',edit:true},
+    {label:'菜单类型',prop:'menuTypeNm',width:'87px'},
+    {label:'访问地址',prop:'iconUrl', width:'', tooltip:true},
     {label:'菜单顺序',prop:'menuOrder',width:''},
     {label:'可见',prop:'menuVisible',width:''},
     {label:'创建人',prop:'createUser',width:''},
-    {label:'创建时间',prop:'createDate',width:''},
+    {label:'创建时间',prop:'createDate',width:'181px'},
     {label:'修改人',prop:'updateUser',width:''},
-    {label:'修改时间',prop:'updateDate',width:''},
-    {label:'备注',prop:'remark',width:''},
+    {label:'修改时间',prop:'updateDate',width:'181px'},
+    {label:'备注',prop:'remark',width:'274px'},
 ]
 const menuTable = ref()
 const cascader = ref()
@@ -249,16 +258,16 @@ const refs = getCurrentInstance();
 const getValue = ()=>{
     let arr = cascader.value.getCheckedNodes();
     let type = arr[0].pathNodes[arr[0].pathNodes.length-1].data.menuType
-    if(type=='菜单'){
+    if(type=='01'){
         menuTypeList.value = [
             {label:"菜单",value:"01"},
             {label:"页面",value:"02"},
         ]
-    }else if(type=='页面'){
+    }else if(type=='02'){
         menuTypeList.value = [
             {label:"按钮",value:"03"},
         ]
-    }else if(type=='按钮'){
+    }else if(type=='03'){
         menuTypeList.value = []
     }else{
         menuTypeList.value = [
@@ -270,7 +279,7 @@ const getValue = ()=>{
 }
 const menuTypeList = ref([])
 const submit=(form)=>{
-    menuTable.value.onload(form)
+    menuTable.value.onload(form,'1')
 }
 const casProps = {
     checkStrictly:true,
@@ -286,5 +295,20 @@ const casProps = {
     padding:30px;
     height:calc(100% - 100px)
 }
-
+:deep(.menu-form .el-form-item__label){
+    height:50px;
+    line-height:50px;
+}
+:deep(.menu-form .el-input,.menu-form .el-select,.menu-form .el-cascader){
+    width:300px;
+    height:50px;
+    line-height:50px;
+    .el-input__inner{
+        height:50px;
+        line-height:50px;
+    }
+}
+:deep(.menu-remark){
+    width:778px
+}
 </style>

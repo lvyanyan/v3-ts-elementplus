@@ -4,6 +4,7 @@
     <input id="file" type="file" @change="changeFile" style="display:none;">
     <div class="file-box">
         <div class="item-box" v-for="(item,index) in fileList">
+            <i class="rz-icon rz-file"></i>
             <div class="file-name">
                 <el-tooltip :content="item.name" placement="top">
                 <div>{{item.name}}</div>
@@ -102,7 +103,7 @@ const submitFiles = ()=>{
     fileValue.value.forEach((item,index)=>{
             let reader = new FileReader();
             let mdg = ''
-            reader.readAsText(item);
+            reader.readAsDataURL(item);
             reader.onloadend = function (e) {
                 mdg = md5(e.target.result);
                 submitFile(item,props.form,index,mdg)
@@ -190,7 +191,7 @@ defineExpose({})
         padding-top:5px;
         float:left;
         div{
-            font-size:14px;
+            font-size:16px;
             // height:20px;
             line-height:20px;
             overflow:hidden;
@@ -201,6 +202,10 @@ defineExpose({})
     :deep(.rz-icon){
         float:left;
         margin-top:24px;
+    }
+    :deep(.rz-file){
+        margin-top:16px;
+        margin-right:10px;
     }
     :deep(.el-progress){
         padding-top:24px;

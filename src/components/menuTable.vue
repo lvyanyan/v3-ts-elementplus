@@ -1,23 +1,24 @@
 <template>
-  <el-table :data="tableData" :highlight-current-row="highlight" :border="border" :row-key="expand?'id':''" style="width" :height="height"  :row-class-name="tableRowClassName" @row-click="changeDic" :header-row-class-name="headerStyle" @selection-change="getSelection">
-    <el-table-column v-if="check" type="selection" width="55" />
-    <el-table-column v-if="index" type="index" label="序号" width="55" />
+  <el-table :data="tableData" :highlight-current-row="highlight" :border="border" :row-key="expand?'id':''" :style="`width:${px2rem(width)};height:${px2rem(height)}`"  :height="px2rem(height)"   :row-class-name="tableRowClassName" @row-click="changeDic" :header-row-class-name="headerStyle" @selection-change="getSelection">
+    <el-table-column v-if="check" type="selection" :width="px2rem(55)" />
+    <el-table-column v-if="index" type="index" label="序号" :width="px2rem(55)" />
     <el-table-column type="expand">
       <template #default="props">
-        <el-table :data="props.row.children" :header-row-class-name="headerStyle" @selection-change="getSelection">
-            <el-table-column v-if="check" type="selection" width="55" />
-            <el-table-column type="index" label="序号" width="55" />
+        <el-table :data="props.row.children" :header-row-class-name="headerStyle" @selection-change="getSelection1" :show-header="false"  :height="px2rem(height)">
+            <el-table-column v-if="check" type="selection" :width="px2rem(55)" />
+            <el-table-column type="index" label="序号" :width="px2rem(55)" />
                 <el-table-column type="expand">
                 <template #default="props">
-                    <el-table :data="props.row.children" :header-row-class-name="headerStyle" @selection-change="getSelection" >
-                        <el-table-column v-if="check" type="selection" width="55" />
-                        <el-table-column type="index" label="序号" width="55" />
-                        <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="item.width" >
+                    <el-table :data="props.row.children" :header-row-class-name="headerStyle" @selection-change="getSelection2" :show-header="false"  :height="px2rem(height)">
+                        <el-table-column v-if="check" type="selection" :width="px2rem(55)" />
+                        <el-table-column type="index" label="序号" :width="px2rem(55)" />
+                        <el-table-column width="48"></el-table-column>
+                        <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="px2rem(item.width)"  :show-overflow-tooltip="item.tooltip">
                             <template #default="scope" v-if="item.edit">
-                                <span class="edit-cell" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
+                                <span class="edit-cell level3" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="操作" v-if="expandOperate" width="137">
+                        <el-table-column label="操作" v-if="expandOperate" :width="px2rem(137)">
                             <template #default="scope">
                                 <div>
                                     <el-tooltip :content="item.text" placement="top" v-for="item in expandOperation">
@@ -29,12 +30,12 @@
                     </el-table>
                 </template>
                 </el-table-column>
-            <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="item.width" >
+            <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="px2rem(item.width)"  :show-overflow-tooltip="item.tooltip">
                 <template #default="scope" v-if="item.edit">
-                    <span class="edit-cell" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
+                    <span class="edit-cell level2" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="操作" v-if="expandOperate" width="137">
+            <el-table-column label="操作" v-if="expandOperate" :width="px2rem(137)">
                 <template #default="scope">
                     <div>
                         <el-tooltip :content="item.text" placement="top" v-for="item in expandOperation">
@@ -46,9 +47,9 @@
         </el-table>
       </template>
     </el-table-column>
-    <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="item.width" :show-overflow-tooltip="item.ellipsis">
+    <el-table-column v-for="item in config" :prop="item.prop" :label="item.label" :width="px2rem(item.width)" :show-overflow-tooltip="item.tooltip">
           <template #default="scope" v-if="item.edit">
-            <span class="edit-cell" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
+            <span class="edit-cell level1" @click="$emit('editRow',scope.row)">{{scope.row[item.prop]}}</span>
           </template>
     </el-table-column>
     <el-table-column label="操作" v-if="operate">
@@ -86,6 +87,7 @@
 
 <script lang="ts" setup>
 import {ref, onMounted} from 'vue'
+import {px2rem} from '/src/utils/public'
 import {ArrowRight,ArrowDown} from '@element-plus/icons-vue'
 import http from '/src/api/http'
 const props = defineProps({
@@ -153,7 +155,10 @@ const hidden = (row)=>{
         row.ellipsis = 'true'
     }
 }
-const onload=(param)=>{
+const onload=(param,pageNumber)=>{
+    if(pageNumber){
+        currentPage.value = pageNumber
+    }
     let params = props.dataParams?props.dataParams:{};
     let page = {
         pageNumber:currentPage.value,
@@ -247,8 +252,18 @@ defineExpose({onload,selection,selection1,selection2})
         }
         .edit-cell{
             cursor:pointer;
-            color:#e4393c;
+            color:#409eff;
             font-weight:400;
+            text-align:left;
+        }
+        .level1{
+            // padding-left:30px;
+        }
+        .level2{
+            padding-left:73px;
+        }
+        .level3{
+            padding-left:116px;
         }
     }
 }

@@ -1,6 +1,6 @@
 <!--  -->
 <template>
-<el-dialog v-model="props.createVisible" :title="props.dialogTitle" destroy-on-close :close-on-click-modal="false" draggable center :before-close="outForm" :width="width">
+<el-dialog v-model="props.createVisible" :title="props.dialogTitle" :width="px2rem(width)" destroy-on-close :close-on-click-modal="false" draggable center :before-close="outForm">
         <slot name="content"></slot>
         <div slot="footer" class="dialog-footer">
             <rz-btns :config="sub?btnConfig1:btnConfig2" @onSubmit="onSubmit" @outForm="outForm" :style="`text-align:center`"></rz-btns>
@@ -9,6 +9,7 @@
 </template>
 
 <script lang='ts' setup>
+import {px2rem} from '/src/utils/public'
 import RzBtns from './buttons.vue'
 const props = defineProps({
  	width: String,
@@ -39,9 +40,10 @@ const outForm=()=>{
 }
 </script>
 <style lang='less' scoped>
+
 //@import url(); 引入公共css类
 :deep(.el-dialog--center){
-    width:800px;
+    width:800px !important;
     .el-dialog__header{
         background:#F2F5FA;
         margin:0;

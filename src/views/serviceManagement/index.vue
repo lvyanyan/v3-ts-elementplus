@@ -1,9 +1,9 @@
 <!--  -->
 <template>
 <div class='box'>
-    <rz-form :config="formConfig" @submit="submit" :data="searchData"></rz-form>
+    <rz-form :config="formConfig" @submit="submit" :data="searchData" @change-data="recieveData"></rz-form>
     <rz-btns :config="btnConfig" @createService="createService" @updateService="updateService" @deleteService="deleteService" @createVersion="createVersion"></rz-btns>
-    <rz-table ref="serviceTable" :config="tableConfig" expand-index expand-operate :expand-operation="expandOperation" :expandConfig="expandConfig" :border="false" expand width="1567px" @publicVersion="publicVersion" @recallVersion="recallVersion" @deleteVersion="deleteVersion" @updateVersion="updateVersion" index check data-url="/service/list" >
+    <rz-table ref="serviceTable" @editRow="editRow" @editChild="updateVersion" :data-params="dataParams" :config="tableConfig" expand-index expand-operate :expand-operation="expandOperation" :expandConfig="expandConfig" :border="false" expand width="1567px" @publicVersion="publicVersion" @recallVersion="recallVersion" @deleteVersion="deleteVersion" @updateVersion="updateVersion" index check data-url="/service/list" >
     </rz-table>
     <rz-dialog v-if="createVisible" :createVisible="createVisible" :dialogTitle="serviceTitle"  @onSubmit="serverSubmit" @outForm="serverOut" width="800px">
     <template #content>
@@ -69,7 +69,7 @@
                 <el-row>
                 <el-col :span="24">    
                 <el-form-item label="描述信息">
-                    <el-input type="textarea" v-model='versionForm.versionDescription'></el-input>
+                    <el-input type="textarea" v-model='versionForm.versionDescription' maxlength="1000" show-word-limit></el-input>
                 </el-form-item>
                 </el-col>
                 </el-row>
@@ -114,6 +114,12 @@ const btnConfig=[
     {text:'删除服务', class:'bg-blue',functionName:'deleteService'},
     {text:'更新版本', class:'bg-blue',functionName:'createVersion'},
 ];
+const dataParams = reactive({})
+const recieveData = (n)=>{
+    for(let i in n){
+        dataParams[i] = n[i]
+    }
+}
 const serviceTitle = ref('新建服务')
 const serviceForm=reactive({
     serviceNm:'',
@@ -156,6 +162,14 @@ const updateService = ()=>{
     serviceForm.serviceNm = arr[0].serviceNm
     serviceForm.createUser = arr[0].createUser
     serviceForm.servicePort = arr[0].servicePort
+    serviceTitle.value = '修改服务'
+    createVisible.value = true;
+}
+const editRow = (row)=>{
+    serviceForm.serviceId = row.serviceId
+    serviceForm.serviceNm = row.serviceNm
+    serviceForm.createUser = row.createUser
+    serviceForm.servicePort = row.servicePort
     serviceTitle.value = '修改服务'
     createVisible.value = true;
 }
@@ -418,7 +432,7 @@ const deleteVersion = (row)=>{
     })
 }
 const expandConfig = [
-    {label:'版本号',prop:'versionNumber',width:'85px'},
+    {label:'版本号',prop:'versionNumber',width:'85px',edit:true},
     {label:'服务类型',prop:'serviceTypeNm',width:'116px'},
     {label:'发布时间',prop:'releaseDate',width:'200px'},
     {label:'数据包大小',prop:'fileSize',width:'99px'},
@@ -430,7 +444,7 @@ const expandConfig = [
     {label:'发布人',prop:'releaseUser',width:'84px'},
 ]
 const tableConfig=[
-    {label:'服务名称',prop:'serviceNm',width:'264px'},
+    {label:'服务名称',prop:'serviceNm',width:'264px',edit:true},
     {label:'服务标识',prop:'serviceId',width:'175px'},
     {label:'端口号',prop:'servicePort',width:'137px'},
     // {label:'服务类型',prop:'createDate',width:''},
@@ -444,7 +458,7 @@ const serviceTable = ref()
 const upload = ref()
 const refs = getCurrentInstance();
 const submit=(form)=>{
-    serviceTable.value.onload(form)
+    serviceTable.value.onload(form,'1')
 }
 </script>
 <style lang='less' scoped>
@@ -474,7 +488,7 @@ const submit=(form)=>{
         }
         .el-form-item__label{
             width:134px;
-            font-size: 18px;
+            font-size: 16px;
             line-height:50px;
             font-family: SourceHanSansCN-Normal, SourceHanSansCN;
             font-weight: 400;
@@ -485,7 +499,7 @@ const submit=(form)=>{
             height:50px;
         }
         .el-textarea{
-            width:815px;
+            width:772px;
         }
     }
     .bottom-card{

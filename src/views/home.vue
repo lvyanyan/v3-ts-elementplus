@@ -17,6 +17,7 @@
                 </span>
                 <template #dropdown>
                 <el-dropdown-menu>
+                    <el-dropdown-item><span @click="updatePwd">修改密码</span></el-dropdown-item>
                     <el-dropdown-item><span @click="loginOut">退出</span></el-dropdown-item>
                 </el-dropdown-menu>
                 </template>
@@ -33,13 +34,33 @@
         <router-view :key="route.fullPath"></router-view>
     </div>
 </div>
+<rz-dialog :createVisible="pwdVisible" dialogTitle="修改密码"  @onSubmit="pwdSubmit" @outForm="pwdOut" width="800px">
+    <template #content>
+        <el-form :model="pwdForm" :rules="pwdRules" label-position="right" label-width="120px">
+            <el-form-item label="原密码" prop="oldPassword">
+                <el-input v-model="pwdForm.oldPassword" placeholder="请输入密码">
+                </el-input>
+            </el-form-item>
+            <el-form-item label="新密码" prop="userPassword">
+                <el-input v-model="pwdForm.userPassword" placeholder="请输入密码">
+                </el-input>
+            </el-form-item>
+            <el-form-item label="确认新密码" prop="resetuserPassword">
+                <el-input v-model="pwdForm.resetuserPassword" placeholder="请再次输入密码">
+                </el-input>
+            </el-form-item>
+        </el-form>
+    </template>
+</rz-dialog>
 </template>
 
 <script lang='ts' setup>
-import { ref, watch, getCurrentInstance, onMounted, computed} from 'vue'
+import { ref, watch, getCurrentInstance, onMounted, computed, reactive} from 'vue'
 import {useRouter} from 'vue-router'
 import { ElMessage } from 'element-plus';
 import http from '/src/api/http'
+import {resetObj} from '/src/utils/public'
+import RzDialog from '../components/dialog.vue'
 import $store from "../store/index";
 import tags from '../components/tags.vue'
 // import type { ElTree } from 'element-plus'
@@ -50,6 +71,48 @@ const ci = getCurrentInstance()
 //   id: string
 //   children?: Tree[]
 // }
+const pwdVisible = ref(false)
+const pwdForm = reactive({
+    oldPassword:'',
+    userPassword:'',
+    resetuserPassword:''
+})
+const pwdRules = {
+    oldPassword:[{required:true,message:'原密码不能为空',trigger:'blur'}],
+    userPassword:[{required:true,message:'新密码不能为空',trigger:'blur'}],
+    resetuserPassword:[{required:true,message:'新密码不能为空',trigger:'blur'}],
+}
+const pwdSubmit = ()=>{
+    if(pwdForm.userPassword != pwdForm.resetuserPassword){
+            ElMessage({
+                type:'warning',
+                message:'两次密码不一致'
+            })
+            return;
+    }
+    http({
+        url:'/user/update/password',
+        method:'post',
+        data:pwdForm
+    }).then(res=>{
+        if(res.code==200){
+            ElMessage({
+                type:'success',
+                message:'修改成功'
+            })
+            pwdOut()
+        }else{
+            ElMessage({
+                type:'error',
+                message:res.msg
+            })
+        }
+    })
+}
+const pwdOut = ()=>{
+    resetObj(pwdForm)
+    pwdVisible.value = false;
+}
     onMounted( async ()=>{
         let tags = JSON.parse(localStorage.getItem('tags'))
         let active = localStorage.getItem('active')
@@ -66,6 +129,9 @@ const ci = getCurrentInstance()
             route.push({path:$store.state.tagName})
         }
     })
+const updatePwd = ()=>{
+    pwdVisible.value = true;
+}
 const loginOut = ()=>{
             let info = {
                 userNo:'',
@@ -82,7 +148,7 @@ const navList = computed(()=>{ return JSON.parse($store.state.navicate) });
 const tagArray = computed(()=>{ return $store.state.tags });
 // const treeRef = ref<InstanceType<typeof ElTree>>()
 const handleNodeClick = (data) => {
-  if(data.menuType!="页面"){return}
+  if(data.menuType!="02"){return}
   if(data.iconUrl){
       route.push({path:data.iconUrl})
       let tags = tagArray.value
