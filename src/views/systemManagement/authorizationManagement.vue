@@ -394,6 +394,7 @@ const editRow = (row)=>{
 }
 const onSubmit=()=>{
     let url = authorTitle.value == '修改角色'?'/role/update':'/role/create'
+    let msg = authorTitle.value == '修改角色'?'修改成功':'创建成功'
     http({
         url,
         method:'post',
@@ -402,7 +403,7 @@ const onSubmit=()=>{
         if(res.code=="200"){
             ElMessage({
                 type:'success',
-                message:'新建成功'
+                message:msg
             })
             outForm()
         }else{

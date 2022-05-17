@@ -108,9 +108,7 @@ const deleteItems = ()=>{
     let arr = menuTable.value.selection;
     let arr1 = menuTable.value.selection1;
     let arr2 = menuTable.value.selection2;
-    console.log(arr,arr1,arr2)
     arr = [...arr,...arr1,...arr2]
-    console.log(arr)
     if(arr.length<1){
         return;
     }
@@ -197,6 +195,13 @@ const menuSubmit=(val)=>{
     // })
     let url = formTitle.value == '添加菜单'?'/menu/add':'/menu/update'
     let msg = formTitle.value == '添加菜单'?'新建成功':'修改成功'
+        if(!menuForm.parent){
+            ElMessage({
+                type:'error',
+                message:'先选择上级菜单'
+            })
+            return
+    }
     menuForm.menuPath = menuForm.parent.join(',')
     menuForm.parentId = menuForm.parent[menuForm.parent.length-1]
     http({
@@ -258,6 +263,7 @@ const refs = getCurrentInstance();
 const getValue = ()=>{
     let arr = cascader.value.getCheckedNodes();
     let type = arr[0].pathNodes[arr[0].pathNodes.length-1].data.menuType
+    menuForm.menuType = ''
     if(type=='01'){
         menuTypeList.value = [
             {label:"菜单",value:"01"},

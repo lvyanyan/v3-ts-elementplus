@@ -210,7 +210,7 @@ const tableConfig=[
     {label:'邮箱',prop:'email',width:''},
 ]
 const tableOperation=[
-    {text:'注销', class:'rz-destroy',functionName:'destroyUser'},
+    {text:'注销/恢复', class:'rz-destroy',functionName:'destroyUser'},
     {text:'删除', class:'rz-delete',functionName:'deleteItem'},
     {text:'重置密码', class:'rz-reset',functionName:'resetPwd'},
     {text:'个人设置', class:'rz-setting',functionName:'personSetting'},

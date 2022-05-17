@@ -7,6 +7,8 @@ export default createStore({
         tagName: String,//当前标签
         navicate: JSON.stringify([]),//导航
         roles: [],//角色列表
+        AW013: [],
+        methodList: [],
         btns: null,
         userInfo: JSON.stringify({
             userNo: '123456',
@@ -17,6 +19,12 @@ export default createStore({
     mutations: {
         saveTags(state, val) {
             state.tags = val
+        },
+        saveAW013(state, val) {
+            state.AW013 = val
+        },
+        saveMethod(state, val) {
+            state.methodList = val;
         },
         saveTagName(state, val) {
             state.tagName = val
@@ -52,6 +60,12 @@ export default createStore({
         },
         setTagName(context, value) {
             context.commit('saveTagName', value)
+        },
+        set013(context, value) {
+            context.commit('saveAW013', value)
+        },
+        setMethodNm(context, value) {
+            context.commit('saveMethod', value)
         }
     }
 })

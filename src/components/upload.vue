@@ -24,7 +24,7 @@ import http from '/src/api/http'
 import { ElMessage } from 'element-plus'; 
 import store from '/src/store'
 import { ref } from 'vue'
-import md5 from 'md5'
+import SparkMD5 from "spark-md5";
 const props = defineProps({
     url:String,
     mergeUrl:String,
@@ -103,9 +103,11 @@ const submitFiles = ()=>{
     fileValue.value.forEach((item,index)=>{
             let reader = new FileReader();
             let mdg = ''
-            reader.readAsDataURL(item);
+            reader.readAsBinaryString(item);
+            let spark = new SparkMD5();
             reader.onloadend = function (e) {
-                mdg = md5(e.target.result);
+                spark.appendBinary(e.target.result);
+                 mdg = spark.end()
                 submitFile(item,props.form,index,mdg)
                 //开始分块上传文件
                 //UploadPost(fileid, file, totalSize, blockCount, blockSize, md5);

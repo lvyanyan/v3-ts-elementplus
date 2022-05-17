@@ -8,6 +8,7 @@
 <script lang='ts' setup>
 import http from '/src/api/http'
 import { reactive,ref } from 'vue'
+import $store from "../store/index";
 const props = defineProps({
  	value: String,
     domain: String,
@@ -21,6 +22,9 @@ const getOptions = ()=>{
         params:{dicDomain:props.domain}
     }).then(res=>{
         list.value = res.data
+        if(props.domain=='AW013'){
+            $store.dispatch('set013',res.data)
+        }
     })
 }
 getOptions()

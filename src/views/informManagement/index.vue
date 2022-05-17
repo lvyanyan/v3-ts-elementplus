@@ -33,7 +33,7 @@
                 </el-row>
                 <el-row>
                 <el-col>
-                <el-form-item label="消息内容">
+                <el-form-item label="消息内容" prop="noticeDetail">
                     <el-input type="textarea" v-model="noticeForm.noticeDetail" class="notice-detail" :rows="8" maxlength="1000" show-word-limit></el-input>
                 </el-form-item>
                 </el-col>

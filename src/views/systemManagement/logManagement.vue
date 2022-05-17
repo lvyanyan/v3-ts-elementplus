@@ -11,6 +11,7 @@
 <script lang='ts' setup>
 import { ref, onMounted, getCurrentInstance, reactive} from 'vue'
 import { ElMessage } from 'element-plus';
+import $store from "/src/store/index";
 import RzTable from '../../components/table.vue'
 import RzForm from '../../components/form.vue'
 // import RzBtns from '../../components/buttons.vue'
@@ -64,7 +65,18 @@ onMounted(()=>{
     
 })
 const submit=(form)=>{
-    logTable.value.onload(form,'1')
+    let obj = form;
+    let controllerList = $store.state.AW013
+    let methodList = $store.state.methodList
+    let cindex = controllerList.findIndex(item=>{
+        return item.dicKey == obj.controllerNm
+    })
+    let mindex = methodList.findIndex(item=>{
+        return item.dicKey == obj.methodNm
+    })
+    obj.controllerNm = controllerList[cindex].dicValue
+    obj.methodNm = methodList[mindex].dicValue
+    logTable.value.onload(obj,'1')
 }
 
 </script>
