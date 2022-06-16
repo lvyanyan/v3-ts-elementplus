@@ -67,15 +67,15 @@ onMounted(()=>{
 const submit=(form)=>{
     let obj = form;
     let controllerList = $store.state.AW013
-    let methodList = $store.state.methodList
+    let methodList = $store.state.methodList?$store.state.methodList:[]
     let cindex = controllerList.findIndex(item=>{
         return item.dicKey == obj.controllerNm
     })
     let mindex = methodList.findIndex(item=>{
         return item.dicKey == obj.methodNm
     })
-    obj.controllerNm = controllerList[cindex].dicValue
-    obj.methodNm = methodList[mindex].dicValue
+    if(cindex!=-1)obj.controllerNm = controllerList[cindex].dicValue
+    if(mindex!=-1)obj.methodNm = methodList[mindex].dicValue
     logTable.value.onload(obj,'1')
 }
 

@@ -20,15 +20,15 @@
     <template #content>
         <el-form :inline="true" class="rz-form" :model="createData" :rules="createRules" label-position="right" label-width="120px">
             <el-form-item label="帐号" prop="userNo">
-                <el-input v-model="createData.userNo" :disabled="createTitle == '修改用户'" placeholder="请输入帐号">
+                <el-input v-model="createData.userNo" :disabled="createTitle == '修改用户'" placeholder="请输入帐号" maxlength="32" show-word-limit>
                 </el-input>
             </el-form-item>
             <el-form-item label="用户名" prop="userNm">
-                <el-input v-model="createData.userNm" placeholder="请输入用户名">
+                <el-input v-model="createData.userNm" placeholder="请输入用户名" maxlength="50" show-word-limit>
                 </el-input>
             </el-form-item>
             <el-form-item label="密码" prop="userPassword" v-if="createTitle == '新建用户'">
-                <el-input v-model="createData.userPassword" placeholder="请输入密码">
+                <el-input v-model="createData.userPassword" placeholder="请输入密码" maxlength="32" show-word-limit>
                 </el-input>
             </el-form-item>
             <el-form-item label="角色选择" prop="roleId" v-if="createTitle == '新建用户'">
@@ -37,11 +37,11 @@
                 </el-select>
             </el-form-item>
             <el-form-item label="联系电话" prop="phone">
-                <el-input v-model="createData.phone" placeholder="请输入联系电话">
+                <el-input v-model="createData.phone" placeholder="请输入联系电话" maxlength="11" show-word-limit>
                 </el-input>
             </el-form-item>
             <el-form-item label="电子邮箱" prop="email">
-                <el-input v-model="createData.email" placeholder="请输入电子邮箱">
+                <el-input v-model="createData.email" placeholder="请输入电子邮箱" maxlength="32" show-word-limit>
                 </el-input>
             </el-form-item>
         </el-form>
@@ -201,8 +201,8 @@ const createRules = {
 }
 
 const tableConfig=[
-    {label:'用户账号',prop:'userNo',width:'',edit:true},
-    {label:'用户名',prop:'userNm',width:''},
+    {label:'用户账号',prop:'userNo',width:'',edit:true,tooltip:true},
+    {label:'用户名',prop:'userNm',width:'',tooltip:true},
     {label:'创建时间',prop:'createDate',width:'206px'},
     {label:'角色',prop:'roleNm',width:''},
     {label:'状态',prop:'status',width:''},
@@ -357,6 +357,7 @@ const editRow = (row)=>{
 }
 const onSubmit=()=>{
     let url = createTitle.value=='新建用户'?'/user/create':'/user/update'
+    let msg = createTitle.value=='新建用户'?'新建成功':'修改成功'
     http({
         url,
         method:'post',
@@ -365,7 +366,7 @@ const onSubmit=()=>{
         if(res.code=="200"){
             ElMessage({
                 type:'success',
-                message:'新建成功'
+                message:msg
             })
         outForm();
         }else{

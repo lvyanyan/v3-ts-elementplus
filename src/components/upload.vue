@@ -1,6 +1,6 @@
 <!--  -->
 <template>
-    <el-button @click="checkFile">选择安装包</el-button>
+    <el-button @click="checkFile" :disabled="props.disabled">选择安装包</el-button>
     <input id="file" type="file" @change="changeFile" style="display:none;">
     <div class="file-box">
         <div class="item-box" v-for="(item,index) in fileList">
@@ -12,7 +12,7 @@
                 <div>{{`${item.up}/${item.size}`}}</div>
             </div>
             <el-progress :percentage="item.percent" class="progress"></el-progress>
-            <i class="rz-icon rz-close" @click="cancel"></i>
+            <i class="rz-icon rz-close" @click="cancel(item)"></i>
         </div>
     </div>
     
@@ -29,6 +29,10 @@ const props = defineProps({
     url:String,
     mergeUrl:String,
     form:Object,
+    disabled:{
+        type:Boolean,
+        default:false
+    }
 })
 let userInfo = store.state.userInfo
 const fileList = ref([])
@@ -52,12 +56,12 @@ const checkFile = ()=>{
     file.click();
 }
 const removeFile = ref(false)
-const cancel = ()=>{
+const cancel = (item,count=1)=>{
     let url = disabled.value == true?'/service/synchronize/upload/cancel':'/service/synchronize/upload/delete'
     http({
         url,
         method:'post',
-        data:{versionId:props.form.versionId}
+        data:{versionId:props.form.versionId,fileName:item.name,count}
     }).then(res=>{
         if(res.code==200){
             fileList.value = []
@@ -96,7 +100,10 @@ const changeFile = (e: Event)=>{
             }]
         }
     }
-    submitFiles();
+    target.value=""
+    if(fileValue.value.length>0){
+        submitFiles();
+    }
 }
 const submitFiles = ()=>{
     disabled.value = true;
@@ -137,18 +144,22 @@ const submitFile = async (file,obj,index,mdg)=>{
             formData.append('file',blobFile);//切片文件
             formData.append('size',size+'');//原始文件大小
             formData.append('name',name);//原始文件名
+            formData.append('userNo',JSON.parse(userInfo).userNo);//原始文件名
             formData.append('chunks',chunks);//原始文件大小
             formData.append('chunk',chunk+'');//切片索引
             formData.append('mdg',mdg);//切片索引
             for(let i in obj){
                 formData.append(i+'',obj[i])
             }
-            if(removeFile.value==true){
+            if(removeFile.value==true||fileValue.value.length==0){
                 return;
             }
             await axios.post(props.url,formData,{headers:{
                 userInfo
             }});
+            // if(removeFile.value==true){
+            //     cancel(file,2)
+            // }
             chunk++;
             let up = ''
             if(start<1024){
@@ -161,7 +172,7 @@ const submitFile = async (file,obj,index,mdg)=>{
                 up = (start/(1024*1024*1024)).toFixed(2)+'GB'
             }
             if(fileList.value[index])fileList.value[index].up = up
-            if(fileList.value[index])fileList.value[index].percent = (start/size).toFixed(2)*100
+            if(fileList.value[index])fileList.value[index].percent = Math.round(Math.floor(start/size*1000)/10)
         }
         // axios.get(props.mergeUrl+md5(name),{headers:{
         //         userInfo

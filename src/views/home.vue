@@ -13,12 +13,13 @@
         <div class="put-down">
             <el-dropdown>
                 <span class="el-dropdown-link">
-                    <img src="../assets/user_putdown.png">
+                    <!-- <img src="../assets/user_putdown.png"> -->
+                    <el-icon><CaretBottom /></el-icon>
                 </span>
                 <template #dropdown>
                 <el-dropdown-menu>
-                    <el-dropdown-item><span @click="updatePwd">修改密码</span></el-dropdown-item>
-                    <el-dropdown-item><span @click="loginOut">退出</span></el-dropdown-item>
+                    <el-dropdown-item @click="updatePwd"><span>修改密码</span></el-dropdown-item>
+                    <el-dropdown-item @click="loginOut"><span>退出</span></el-dropdown-item>
                 </el-dropdown-menu>
                 </template>
             </el-dropdown>
@@ -59,6 +60,7 @@ import { ref, watch, getCurrentInstance, onMounted, computed, reactive} from 'vu
 import {useRouter} from 'vue-router'
 import { ElMessage } from 'element-plus';
 import http from '/src/api/http'
+import {CaretBottom} from '@element-plus/icons-vue'
 import {resetObj} from '/src/utils/public'
 import RzDialog from '../components/dialog.vue'
 import $store from "../store/index";
@@ -122,8 +124,8 @@ const pwdOut = ()=>{
             route.push('/login')
         }else{
             await $store.dispatch('setInfo',JSON.stringify(userInfo))
-            await $store.dispatch('setTags',tags?tags:[{title:'主页',iconUrl:'/'}]);// 修改
-            await $store.dispatch('setTagName',active?active:'/');// 修改
+            await $store.dispatch('setTags',tags?tags:[{title:'主页',iconUrl:'/homePage'}]);// 修改
+            await $store.dispatch('setTagName',active?active:'/homePage');// 修改
             await $store.dispatch('setNavicate',nav?nav:JSON.stringify([]));
             navTree.value.setCurrentKey(active);
             route.push({path:$store.state.tagName})
@@ -138,8 +140,8 @@ const loginOut = ()=>{
                 userNm:'',
                 userLoginNm:''
             }
-    localStorage.setItem('active','/')
-    localStorage.setItem('tags',JSON.stringify([{title:'主页',iconUrl:'/'}]))
+    localStorage.setItem('active','/homePage')
+    localStorage.setItem('tags',JSON.stringify([{title:'主页',iconUrl:'/homePage'}]))
     localStorage.removeItem('userInfo')
     $store.dispatch('setInfo',JSON.stringify(info))
     route.push('/login')
@@ -182,7 +184,7 @@ const toHome = ()=>{
         if(next!=-1){return}
         tagArray.value.push({
             title: '主页',
-            iconUrl: '/',
+            iconUrl: '/homePage',
         })
         $store.dispatch('setTags',tagArray)
 }
@@ -191,7 +193,7 @@ const data = [
   {
       id: '0',
     menuNm: '主页',
-    iconUrl:'/'
+    iconUrl:'/homePage'
   },
   {
       id: '1',
@@ -304,18 +306,18 @@ const defaultProps = {
         .put-down{
             float:left;
             margin-right:31px;
-            margin-top:35px;
-            width:10px;
-            height:5px;
+            margin-top:30px;
+            width:20px;
+            height:20px;
             :deep(.el-dropdown){
                 width:100%;
                 height:100%;
                 .el-tooltip__trigger{
                     width:100%;
-                    img{
-                        width:10px;
-                        height:5px;
-                        float:left;
+                    .el-dropdown-link{
+                        width:20px;
+                        height:20px;
+                        color:#fff;
                     }
                 }
             }

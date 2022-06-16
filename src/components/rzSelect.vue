@@ -1,6 +1,6 @@
 <!--  -->
 <template>
-<el-select v-model="props.value" :placeholder="props.placeholder" clearable >
+<el-select v-model="props.value" :placeholder="props.placeholder" :disabled="props.disabled" :clearable="props.clearable" >
     <el-option v-for="item in list" :label="item.dicValue" :value="item.dicKey"></el-option>
 </el-select>
 </template>
@@ -12,6 +12,14 @@ import $store from "../store/index";
 const props = defineProps({
  	value: String,
     domain: String,
+    clearable:{
+        type:Boolean,
+        default:true
+    },
+    disabled:{
+        type:Boolean,
+        default:false
+    },
     placeholder:String,
 })
 const list = ref([])

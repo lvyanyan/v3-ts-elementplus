@@ -3,7 +3,7 @@
 <div class='box'>
     <rz-form :config="formConfig" @submit="submit" :data="searchData" @change-data="recieveData"></rz-form>
     <rz-btns :config="btnConfig" @createMenu="createMenu" @deleteItems="deleteItems"></rz-btns>
-    <me-table ref="menuTable" expand expandIndex @editRow="editRow" :config="tableConfig" width="1567px" nopage data-url="/menu/list" index check :data-params="dataParams"></me-table>
+    <me-table ref="menuTable" expand expandIndex @editRow="editRow" :config="tableConfig"  width="1567px" nopage data-url="/menu/list" index check :data-params="dataParams"></me-table>
         <rz-dialog :createVisible="createMenuVisible" :dialogTitle="formTitle"  @onSubmit="menuSubmit" @outForm="menuOut" width="984px">
         <template #content>
             <el-form class="menu-form" :model="menuForm" inline :rules="menuRules" label-width="80px" label-position="right">
@@ -16,19 +16,19 @@
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="菜单地址">
-                            <el-input v-model="menuForm.iconUrl"></el-input>
+                            <el-input v-model="menuForm.iconUrl" maxlength="128" show-word-limit></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row>
                     <el-col :span="12">
                         <el-form-item label="菜单名称" prop="menuNm">
-                            <el-input v-model="menuForm.menuNm"></el-input>
+                            <el-input v-model="menuForm.menuNm" maxlength="32" show-word-limit></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="排序号" prop="menuOrder">
-                            <el-input v-model="menuForm.menuOrder"></el-input>
+                            <el-input v-model="menuForm.menuOrder" maxlength="4" show-word-limit></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -36,7 +36,7 @@
                     <el-col :span="12">
                         <el-form-item label="菜单类型" prop="menuType">
                             <el-select v-model="menuForm.menuType">
-                                <el-option v-for="item in menuTypeList" :label="item.label" :value="item.value"></el-option>
+                                <el-option v-for="item in menuTypeList" :label="item.dicValue" :value="item.dicKey"></el-option>
                             </el-select>
                         </el-form-item>
                     </el-col>
@@ -50,7 +50,7 @@
                 <el-row>
                     <el-col :span="24">
                         <el-form-item label="备注" prop="remark">
-                            <el-input type="textarea" v-model="menuForm.remark" :rows="6" maxlength="1000" show-word-limit class="menu-remark"></el-input>
+                            <el-input type="textarea" v-model="menuForm.remark" :rows="6" maxlength="128" show-word-limit class="menu-remark"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -76,14 +76,12 @@ const createMenuVisible = ref(false)
 const formConfig=[
     {label:'菜单名称:',prop:'menuNm',type:'input',width:'80px',valueWidth:'200px', placeholder:'请输入'},
     {label:'菜单类型:',prop:'menuType',type:'select',width:'80px',valueWidth:'200px', placeholder:'请输入',domain:'AW007'},
-    {label:'创建人:',prop:'createUser',type:'input',width:'80px',valueWidth:'200px', placeholder:'请选择'},
-    {label:'修改人:',prop:'updateUser',type:'input',width:'80px',valueWidth:'200px', placeholder:'请选择'},
+    {label:'是否可见:',prop:'menuVisible',type:'select',width:'80px',valueWidth:'200px', placeholder:'请选择',domain:'AW008'},
 ];
 const searchData={
     menuNm:'',
     menuType:'',
-    createUser:'',
-    updateUser:'',
+    menuVisible:'',
 }
 const btnConfig=[
     {text:'新建菜单', class:'bg-blue',functionName:'createMenu'},
@@ -184,7 +182,7 @@ const editRow = (row)=>{
             menuForm.parent = parents;
             createMenuVisible.value = true;
             setTimeout(() => {
-                getValue()
+                getTypeList()
             });
         }
     })
@@ -203,7 +201,7 @@ const menuSubmit=(val)=>{
             return
     }
     menuForm.menuPath = menuForm.parent.join(',')
-    menuForm.parentId = menuForm.parent[menuForm.parent.length-1]
+    // menuForm.parentId = menuForm.parent[menuForm.parent.length-1]
     http({
         url,
         method:'post',
@@ -245,7 +243,7 @@ const menuRules = {
     show:[{required:true,message:'请选择是否可见',trigger:'blur'}],
 }
 const tableConfig=[
-    {label:'菜单名称',prop:'menuNm',width:'198px',edit:true},
+    {label:'菜单名称',prop:'menuNm',width:'198px',edit:true,tooltip:true},
     {label:'菜单类型',prop:'menuTypeNm',width:'87px'},
     {label:'访问地址',prop:'iconUrl', width:'', tooltip:true},
     {label:'菜单顺序',prop:'menuOrder',width:''},
@@ -254,34 +252,49 @@ const tableConfig=[
     {label:'创建时间',prop:'createDate',width:'181px'},
     {label:'修改人',prop:'updateUser',width:''},
     {label:'修改时间',prop:'updateDate',width:'181px'},
-    {label:'备注',prop:'remark',width:'274px'},
+    {label:'备注',prop:'remark',width:'274px',tooltip:true},
 ]
 const menuTable = ref()
 const cascader = ref()
 const refs = getCurrentInstance();
 
+const getTypeList = ()=>{
+        http({
+        url:'/menu/search/menuType',
+        method:'post',
+        data:{parentId:menuForm.parentId}
+    }).then(res=>{
+        if(res.code=='200'){
+            menuTypeList.value = res.data
+        }
+    })
+}
 const getValue = ()=>{
     let arr = cascader.value.getCheckedNodes();
-    let type = arr[0].pathNodes[arr[0].pathNodes.length-1].data.menuType
+    // let type = arr[0]?.pathNodes[arr[0].pathNodes.length-1].data.menuType;
+    menuForm.parentId = menuForm.parent[menuForm.parent.length-1]
     menuForm.menuType = ''
-    if(type=='01'){
-        menuTypeList.value = [
-            {label:"菜单",value:"01"},
-            {label:"页面",value:"02"},
-        ]
-    }else if(type=='02'){
-        menuTypeList.value = [
-            {label:"按钮",value:"03"},
-        ]
-    }else if(type=='03'){
-        menuTypeList.value = []
-    }else{
-        menuTypeList.value = [
-            {label:"菜单",value:"01"},
-            {label:"页面",value:"02"},
-            {label:"按钮",value:"03"},
-        ]
-    }
+    getTypeList();
+    // if(type=='01'){
+    //     menuTypeList.value = [
+    //         {label:"菜单",value:"01"},
+    //         {label:"页面",value:"02"},
+    //     ]
+    // }else if(type=='02'){
+    //     menuTypeList.value = [
+    //         {label:"按钮",value:"03"},
+    //         {label:"通用功能",value:"04"},
+    //     ]
+    // }else if(type=='03'){
+    //     menuTypeList.value = []
+    // }else{
+    //     menuTypeList.value = [
+    //         {label:"菜单",value:"01"},
+    //         {label:"页面",value:"02"},
+    //         {label:"按钮",value:"03"},
+    //         {label:"通用功能",value:"04"},
+    //     ]
+    // }
 }
 const menuTypeList = ref([])
 const submit=(form)=>{

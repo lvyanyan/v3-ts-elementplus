@@ -1,15 +1,16 @@
 <template>
-  <el-table :data="tableData" :highlight-current-row="highlight" :border="border" :row-key="expand?'id':''" :style="`width:${px2rem(width)};height:${px2rem(height)}`"  :height="px2rem(height)"   :row-class-name="tableRowClassName" @row-click="changeDic" :header-row-class-name="headerStyle" @selection-change="getSelection">
+<el-scrollbar class="menu-table">
+  <el-table :data="tableData" :highlight-current-row="highlight" row-key="id" :tree-props="{children:'children',hasChildren:'hasChildren'}" default-expand-all :border="border" :row-key="expand?'id':''" :style="`width:${px2rem(width)};`"   :row-class-name="tableRowClassName" @row-click="changeDic" :header-row-class-name="headerStyle" @selection-change="getSelection">
     <el-table-column v-if="check" type="selection" :width="px2rem(55)" />
     <el-table-column v-if="index" type="index" label="序号" :width="px2rem(55)" />
     <el-table-column type="expand">
       <template #default="props">
-        <el-table :data="props.row.children" :header-row-class-name="headerStyle" @selection-change="getSelection1" :show-header="false"  :height="px2rem(height)">
+        <el-table v-if="props.row.children.length>0" :data="props.row.children" :header-row-class-name="headerStyle" default-expand-all  row-key="id" :tree-props="{children:'children',hasChildren:'hasChildren'}" @selection-change="getSelection1" :show-header="false"  >
             <el-table-column v-if="check" type="selection" :width="px2rem(55)" />
             <el-table-column type="index" label="序号" :width="px2rem(55)" />
                 <el-table-column type="expand">
                 <template #default="props">
-                    <el-table :data="props.row.children" :header-row-class-name="headerStyle" @selection-change="getSelection2" :show-header="false"  :height="px2rem(height)">
+                    <el-table v-if="props.row.children.length>0" :data="props.row.children" :header-row-class-name="headerStyle"  row-key="id" :tree-props="{children:'children',hasChildren:'hasChildren'}" @selection-change="getSelection2" :show-header="false"  >
                         <el-table-column v-if="check" type="selection" :width="px2rem(55)" />
                         <el-table-column type="index" label="序号" :width="px2rem(55)" />
                         <el-table-column width="48"></el-table-column>
@@ -64,25 +65,7 @@
         
     </el-table-column>
   </el-table>
-  <div class="page" v-if="!nopage">
-      <el-pagination background style="display:inline-block;" layout="slot" :total="total" >
-        <span class="el-pagination_total">当前第{{currentPage}}页，共{{endPage}}页，共{{total}}条</span>
-      </el-pagination>
-      <el-pagination background style="display:inline-block;" layout="slot" prev-text="上一页" v-model="currentPage" @prev-click="pagePre" :total="total">
-        <el-select v-model="pageSize" class="page-size" @change="sizeChange">
-            <el-option v-for="item in pageSizes" :value="item.value" :label="item.label"></el-option>
-        </el-select>
-        <button class="first-btn btn-prev" @click="turnPage('1')">首页</button>
-        <button class="first-btn btn-prev" :disabled="currentPage==1" @click="pagePre">上一页</button>
-      </el-pagination>
-      <el-pagination background style="display:inline-block;" layout="slot" next-text="下一页" v-model="currentPage" @next-click="pageNext" :total="total">
-        <button class="first-btn btn-prev" @click="pageNext" :disabled="currentPage==endPage">下一页</button>
-        <button class="first-btn btn-prev" @click="turnPage(endPage)">末页</button>
-        <span class="el-pagination_total">前往
-        <el-input v-model="currentPage" class="current-page" @blur="turnPage(currentPage)"></el-input>
-        页</span>
-      </el-pagination>
-  </div>
+  </el-scrollbar>
 </template>
 
 <script lang="ts" setup>
@@ -220,6 +203,13 @@ const headerStyle = ()=>{
 defineExpose({onload,selection,selection1,selection2})
 </script>
 <style lang="less" scoped>
+.el-scrollbar.menu-table{
+    height:591px;
+}
+:deep(.el-table__empty-block){
+    display:none;
+    height:0px;
+}
 .el-table{
     :deep(.el-table__body tr.current-row>td.el-table__cell){
         background:#D3E3FE;
@@ -242,6 +232,9 @@ defineExpose({onload,selection,selection1,selection2})
     }
     :deep(.el-table__expanded-cell){
         // padding-left:178px;
+        height:0;
+        border-bottom:0;
+        border-top:0;
     }
     :deep(.cell){
         text-align:center;
@@ -251,6 +244,7 @@ defineExpose({onload,selection,selection1,selection2})
             text-overflow:ellipsis;
         }
         .edit-cell{
+            float:left;
             cursor:pointer;
             color:#409eff;
             font-weight:400;
@@ -260,43 +254,10 @@ defineExpose({onload,selection,selection1,selection2})
             // padding-left:30px;
         }
         .level2{
-            padding-left:73px;
+            padding-left:40px;
         }
         .level3{
-            padding-left:116px;
-        }
-    }
-}
-.page{
-    margin-top:28px;
-    text-align:right;
-    .el-pagination.is-background{
-        font-size:12px;
-        .current-page{
-            width:22px;
-            text-align:center;
-            :deep(.el-input__inner){
-                padding:0 !important;
-            }
-        }
-        .page-size{
-            width:84px;
-            :deep(.el-input){
-                width:84px;
-                font-size:12px;
-                .el-input__inner{
-                    text-align:left;
-                }
-            }
-        }
-        :deep(.btn-prev,.page-size,.current-page),:deep(.btn-next),:deep(span:not([class*="suffix"])){
-            display:inline-block;
-        }
-        :deep(.btn-prev,.btn-next){
-            width:54px;
-        }
-        .first-btn{
-            width:43px;
+            padding-left:80px;
         }
     }
 }

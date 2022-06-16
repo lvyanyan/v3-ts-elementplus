@@ -58,12 +58,12 @@
                 <el-row>
                     <el-col :span="12">
                         <el-form-item label="类别编码" prop="dicKey">
-                            <el-input v-model="detailForm.dicKey"></el-input>
+                            <el-input v-model="detailForm.dicKey" maxlength="32" show-word-limit></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="类别名称" prop="dicValue">
-                            <el-input v-model="detailForm.dicValue"></el-input>
+                            <el-input v-model="detailForm.dicValue" maxlength="50" show-word-limit></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>

@@ -6,7 +6,6 @@
 
 <script>
   import { ElConfigProvider } from 'element-plus'
-
   import zhCn from 'element-plus/lib/locale/lang/zh-cn'
 export default {
   name: 'App',
@@ -24,6 +23,10 @@ export default {
 }
 </script>
 <style lang='less'>
+*{
+    padding:0;
+    margin:0;
+}
 html,body,#app{
     padding:0;
     width:100%;

@@ -1,11 +1,10 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { ElLoading, ElMessage, LoadingOptionsResolved } from 'element-plus';
-import { getTokenAUTH } from '@/utils/auth';
+import route from '/src/router'
 import store from '/src/store'
 import { urlencoded } from 'body-parser';
 
 const pendingMap = new Map();
-
 const LoadingInstance = {
     _target: null,
     _count: 0
@@ -93,11 +92,23 @@ function httpErrorStatusHandle(error: { message: string | string[]; response: { 
     // 处理被取消的请求
     if (axios.isCancel(error)) return console.error('请求的重复请求：' + error.message);
     let message = '';
+    if (error.response.status == 401) {
+        let info = {
+            userNo: '',
+            userNm: '',
+            userLoginNm: ''
+        }
+        localStorage.removeItem('userInfo');
+        localStorage.setItem('active', '/')
+        localStorage.setItem('tags', JSON.stringify([{ title: '主页', iconUrl: '/' }]))
+        store.dispatch('setInfo', JSON.stringify(info))
+        route.replace({ path: '/login' })
+    }
     if (error && error.response) {
         switch (error.response.status) {
             case 302: message = '接口重定向了！'; break;
             case 400: message = '参数不正确！'; break;
-            case 401: message = '您未登录，或者登录已经超时，请先登录！'; break;
+            case 401: message = '无权限，跳转登陆页重新登陆'; break;
             case 403: message = '您没有权限操作！'; break;
             case 404: message = `请求地址出错: ${error.response.config.url}`; break; // 在正确域名下
             case 408: message = '请求超时！'; break;

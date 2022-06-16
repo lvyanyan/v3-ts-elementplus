@@ -41,7 +41,7 @@ const loginForm = reactive({
 onMounted(()=>{
     let info = localStorage.getItem('userInfo')
     if(info){
-        route.push({path:'/'})
+        route.push({path:'/homePage'})
     }
 })
 const submit = ()=>{
@@ -69,7 +69,7 @@ const submit = ()=>{
                 if(res.code=200){
                     store.dispatch('setNavicate',JSON.stringify(res.data.children))
                     localStorage.setItem('nav',JSON.stringify(res.data.children))
-                    route.push({path:'/'})
+                    route.push({path:'/homePage'})
                 }else{
                     ElMessage({
                         type:'error',

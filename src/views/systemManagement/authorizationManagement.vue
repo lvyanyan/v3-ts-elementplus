@@ -8,10 +8,10 @@
         <template #content>
         <el-form class="rz-form" :model="createForm" :rules="createRules" label-width="120px" label-position="right">
             <el-form-item label="角色名称:" prop="roleNm">
-                <el-input v-model="createForm.roleNm" placeholder="请输入角色名称"></el-input>
+                <el-input v-model="createForm.roleNm" placeholder="请输入角色名称" maxlength="32" show-word-limit></el-input>
             </el-form-item>
             <el-form-item label="描述:">
-                <el-input type="textarea" v-model="createForm.description" :rows="8" placeholder="请输入角色描述" maxlength="1000" show-word-limit></el-input>
+                <el-input type="textarea" v-model="createForm.description" :rows="8" placeholder="请输入角色描述" maxlength="256" show-word-limit></el-input>
             </el-form-item>
         </el-form>
         </template>
@@ -48,7 +48,9 @@
                     <el-input v-model="permissionForm.roleNm" disabled placeholder="请输入角色名称"></el-input>
                 </el-form-item>
                 <el-form-item label="权限分配">
+                    <el-scrollbar class="role">
                     <el-tree ref="menuTree" node-key="id" :props="{label:'menuNm'}" :default-checked-keys="checkedList" show-checkbox :data="menuData" default-expand-all></el-tree>
+                    </el-scrollbar>
                 </el-form-item>
             </el-form>
         </template>
@@ -90,7 +92,7 @@ const recieveData = (n)=>{
 }
 const deleteItems = ()=>{
         ElMessageBox.confirm(
-    '此操作会删除所有选中数据，确认删除?',
+    '所有相关的用户对应的角色都会被删除，确认删除?',
     'Warning',
     {
       confirmButtonText: '确认',
@@ -364,7 +366,7 @@ const memberShip = (row)=>{
 }
 const tableConfig=[
     {label:'角色名称',prop:'roleNm',width:'',edit:true},
-    {label:'描述',prop:'description',width:''},
+    {label:'描述',prop:'description',width:'',tooltip:true},
     {label:'创建人',prop:'createUser',width:''},
     {label:'创建时间',prop:'createDate',width:'206px'},
     {label:'修改人',prop:'updateUser',width:''},
@@ -430,6 +432,10 @@ const submit=(form)=>{
     :deep( .el-form-item){
         margin-right:50px;
     }
+}
+:deep(.el-scrollbar.role){
+    width:100%;
+    height:300px;
 }
 :deep(.el-card){
     margin-bottom:20px;

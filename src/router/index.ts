@@ -7,6 +7,7 @@ const router = createRouter({
             path: '/',
             component: () => import('../views/home.vue'),
             children: [
+                { path: '/homePage', component: () => import('../views/homePage/index.vue') },
                 { path: '/systemManagement/userManagement', component: () => import('../views/systemManagement/userManagement.vue') },
                 { path: '/systemManagement/authorizationManagement', component: () => import('../views/systemManagement/authorizationManagement.vue') },
                 { path: '/systemManagement/dataDictionary', component: () => import('../views/systemManagement/dataDictionary.vue') },
