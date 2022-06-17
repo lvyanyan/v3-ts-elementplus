@@ -22,27 +22,31 @@
     <div class="chart-box">
         <div class="box-item" >
             <p class="chart-title">应用服务状态</p>
-            <div class="chart-item app-status">
+            <div v-if="appStatusShow" class="chart-item app-status">
                 <div :id="appStatus" style="height:100%;"></div>
             </div>
+            <div v-else class="no-data">暂无数据</div>
         </div>
         <div class="box-item" >
-            <p class="chart-title">应用下载下载量排行榜</p>
-            <div class="chart-item app-down">
+            <p class="chart-title">应用下载下载量排行榜<span @click="appDownMore">更多</span></p>
+            <div v-if="appDownShow" class="chart-item app-down">
                 <div :id="appDown" style="height:100%;"></div>
             </div>
+            <div v-else class="no-data">暂无数据</div>
         </div>
         <div class="box-item" >
             <p class="chart-title">消息状态</p>
-            <div class="chart-item msg-status">
+            <div v-if="msgStatusShow" class="chart-item msg-status">
                 <div :id="msgStatus" style="height:100%;"></div>
             </div>
+            <div v-else class="no-data">暂无数据</div>
         </div>
         <div class="box-item" >
-            <p class="chart-title">应用好评排行榜</p>
-            <div class="chart-item app-rate">
+            <p class="chart-title">应用好评排行榜<span @click="appDownMore">更多</span></p>
+            <div v-if="appRateShow" class="chart-item app-rate">
                 <div :id="appRate" style="height:100%;"></div>
             </div>
+            <div v-else class="no-data">暂无数据</div>
         </div>
     </div>
 </div>
@@ -51,15 +55,20 @@
 <script lang='ts' setup>
 import { ref, watch, getCurrentInstance, onMounted, computed, reactive} from 'vue'
 import http from '/src/api/http'
+import { ElMessage,ElMessageBox } from 'element-plus';   
 import { chartPie, chartBar } from '/src/utils/echart'
 const releaseServiceCount = ref(0)
 const downServiceCount = ref(0)
 const releaseNoticeCount = ref(0)
 const userCount = ref(0)
 const appDown = ref('app-down')
+const appDownShow = ref(true)
 const appRate = ref('app-rate')
+const appRateShow = ref(true)
 const msgStatus = ref('msg-status')
+const msgStatusShow = ref(true)
 const appStatus = ref('app-status')
+const appStatusShow = ref(true)
 onMounted(()=>{
     getHead();
     initAppDown();
@@ -85,14 +94,21 @@ const initAppDown = ()=>{
         url:'/home/appDownloadRanking',
         method:'post'
     }).then(res=>{
-        if(res.code==200){
+        if(res.code==200&&res.data&&res.data.length>0){
+            appDownShow.value = true
             let label = [];
             let data = [];
             res.data.forEach(item=>{
                 label.push(item.serviceNm);
                 data.push(item.total)
             })
-            chartBar('app-down', label, data, '应用名')
+            chartBar('app-down', label, data, '下载量')
+        }else{
+            // ElMessage({
+            //     type:'warning',
+            //     message:'应用下载暂无数据'
+            // })
+            appDownShow.value = false
         }
     })
 }
@@ -101,14 +117,21 @@ const initAppRate = ()=>{
         url:'/home/appRatingRanking',
         method:'post'
     }).then(res=>{
-        if(res.code==200){
+        if(res.code==200&&res.data&&res.data.length>0){
+            appRateShow.value = true
             let label = [];
             let data = [];
             res.data.forEach(item=>{
                 label.push(item.serviceNm);
                 data.push(item.score)
             })
-            chartBar('app-rate', label, data, '应用名')
+            chartBar('app-rate', label, data, '评分')
+        }else{
+            // ElMessage({
+            //     type:'warning',
+            //     message:'暂无数据'
+            // })
+            appRateShow.value = false
         }
     })
 }
@@ -117,7 +140,8 @@ const initAppStatus = ()=>{
         url:'/home/appStatus',
         method:'post'
     }).then(res=>{
-        if(res.code==200){
+        if(res.code==200&&res.data&&res.data.length>0){
+            appStatusShow.value = true
             let data = [];
             res.data.forEach(item=>{
                 data.push({
@@ -126,6 +150,12 @@ const initAppStatus = ()=>{
                 })
             })
             chartPie('app-status',data)
+        }else{
+            // ElMessage({
+            //     type:'warning',
+            //     message:'暂无数据'
+            // })
+            appStatusShow.value = false
         }
     })
 }
@@ -134,7 +164,8 @@ const initMsgStatus = ()=>{
         url:'/home/messageStatus',
         method:'post'
     }).then(res=>{
-        if(res.code==200){
+        if(res.code==200&&res.data&&res.data.length>0){
+            msgStatusShow.value = true;
             let data = [];
             res.data.forEach(item=>{
                 data.push({
@@ -143,6 +174,12 @@ const initMsgStatus = ()=>{
                 })
             })
             chartPie('msg-status', data)
+        }else{
+            // ElMessage({
+            //     type:'warning',
+            //     message:'暂无数据'
+            // })
+            msgStatusShow.value = false
         }
     })
 }
@@ -195,12 +232,27 @@ const initMsgStatus = ()=>{
             width:770px;
             height:270px;
         }
+        .no-data{
+            width:770px;
+            height:270px;
+            line-height:270px;
+            font-size:16px;
+            color:#ccc;
+            text-align:center;
+        }
         .chart-title{
             padding-left:20px;
             font-size:16px;
             height:30px;
             line-height:30px;
             border-left:2px solid #017AFF;
+            span{
+                color:#017AFF;
+                float:right;
+                margin-right:20px;
+                cursor:pointer;
+                text-decoration:underline;
+            }
         }
     }
     .box-item:nth-child(2),.box-item:nth-child(4){

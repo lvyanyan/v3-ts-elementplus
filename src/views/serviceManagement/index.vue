@@ -68,7 +68,7 @@
                 </el-row>
                 <el-row>
                 <el-col :span="12">    
-                <el-form-item label="版本类型">
+                <el-form-item label="版本类型" prop="serviceType">
                     <rz-select v-model='versionForm.serviceType' domain="AW011" :clearable="false" :disabled="versionForm.versionStatus=='03'"></rz-select>
                 </el-form-item>
                 </el-col>
@@ -149,6 +149,7 @@ const versionRules = {
     versionLevel:[{required:true,message:'请选择版本级别',trigger:'blur'}],
     createUser:[{required:true,message:'创建人不能为空',trigger:'blur'}],
     serviceUrl:[{required:true,message:'请输入地址链接',trigger:'blur'}],
+    serviceType:[{required:true,message:'请选择版本类型',trigger:'blur'}],
     ifImposed:[{required:true,message:'请选择是否强制',trigger:'blur'}],
 }
 const createService = ()=>{
@@ -306,6 +307,7 @@ const updateSubmit = ()=>{
 }
 const updateOut = ()=>{
     resetObj(versionForm);
+    versionForm.serviceType = '00'
     updateVisible.value = false;
     submit();
 }
@@ -511,7 +513,7 @@ const tableConfig=[
     {label:'应用名称',prop:'serviceNm',width:'264px',edit:true},
     {label:'应用标识',prop:'serviceId',width:'175px'},
     {label:'端口号',prop:'servicePort',width:'137px'},
-    // {label:'应用类型',prop:'createDate',width:''},
+    {label:'应用状态',prop:'serviceStatus',width:''},
     {label:'创建人',prop:'createUser',width:'139px'},
     {label:'最新版本',prop:'lastVersionNumber',width:''},
     {label:'最新版本发布时间',prop:'lastVersionDate',width:'238px'},

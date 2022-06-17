@@ -1,4 +1,5 @@
 import * as echarts from 'echarts';
+import { convertCompilerOptionsFromJson } from 'typescript';
 
 export const chartBar = function (id, label, data, name) {
     var chartDom = document.getElementById(id);
@@ -7,7 +8,11 @@ export const chartBar = function (id, label, data, name) {
 
     option = {
         tooltip: {
-            trigger: 'axis'
+            trigger: 'axis',
+            formatter: function (data) {
+                console.log(data[0])
+                return `${data[0].name}:${data[0].value}`
+            }
         },
         legend: {
             show: true,
@@ -19,7 +24,8 @@ export const chartBar = function (id, label, data, name) {
             data: label
         },
         yAxis: {
-            type: 'value'
+            type: 'value',
+            minInterval: 1
         },
         series: [
             {
